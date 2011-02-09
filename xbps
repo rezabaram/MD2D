@@ -1,0 +1,140 @@
+#!/usr/bin/perl
+$xoffset=10;
+$yoffset=10;
+$scale=10;
+$linewidth=0.005;
+$auto_xoffset=0;
+$auto_yoffset=0;
+$auto_xsize=0;
+$auto_ysize=0;
+$autoscale=10;
+$drawline=0;
+foreach (@ARGV) {
+ chomp;
+ if (/-x(.*)/) {
+  $xoffset=$1;
+ }
+ if (/-y(.*)/) {
+  $yoffset=$1;
+ }
+ if (/-s(.*)/) {
+  $scale=$1;
+ }
+ if (/-a/) {
+  $autoscale=1;
+ }
+ if (/-d/) {
+  $drawline=1;
+ }
+ if (/-l(.*)/) {
+  $linewidth=$1;
+ }
+ if (/^-h/ or /^--h/ or /^-\?/) {
+  print "Usage: xbps [-x0] [-y0] [-s1] [-l0.01] FILE\n";
+  print "\t-x\toffset in x\n";
+  print "\t-y\toffset in y\n";
+  print "\t-s\tscale factor\n";
+  print "\t-a\ttry to autoscale\n";
+  print "\t-l\tline width\n";
+  exit;
+ }
+}
+foreach (@ARGV) {
+ chomp;
+ if (/^[^-]/){
+  $filename=$_;
+  open(INPUT,$filename) or die "Can't open $FOO: $!";
+  $particle_counter=1;
+  $page_counter=0;
+  while(<INPUT>){
+   next if(/^#/);
+   chomp;
+   if($particle_counter==0){
+    /^(\S*)\s*\S*\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; # xball format 2d
+    # /^(\S*)\s*\S*\s*(\S*)\s*(\S*)\s*\S*\s*(\S*)\s*(\S*)/; # xball format 3d
+    if($autoscale){
+     if($4-$2>$auto_xsize){$auto_xsize=$4-$2};
+     if($5-$3>$auto_ysize){$auto_ysize=$5-$3};
+    }
+    $particle_counter=$1;
+    $page_counter++;
+   } else {
+    $particle_counter--;
+   }
+  }
+
+#  if($autoscale){
+#   $scale=29.7/$auto_ysize; # 297mm
+#   $tmp=21.0 / $auto_xsize; # 210mm
+#   if($tmp<$scale) {$scale=$tmp};
+#  }
+ print "%!PS-Adobe-1.0\n";
+ print "%%Pages: ", $page_counter,"\n";
+ print "/box {newpath 2 index 2 index exch moveto dup 0 rlineto dup 0 exch  rlineto -1 mul 0  rlineto pop  pop closepath stroke} bind def\n";
+
+print"/fbox {newpath 2 index 2 index exch moveto dup 0 rlineto dup 0 exch  rlineto -1 mul 0  rlineto pop  pop closepath fill stroke} bind def\n";
+
+ print "/cir {0 360 arc closepath stroke}bind def\n";
+        print "/proj {  2 index viewx sub 1 index viewz sub div viewz mul -1 mul viewx add
+        2 index viewy sub 2 index viewz sub div viewz mul -1 mul viewy add } bind def\n";
+print " /red {gsave 0 360 arc closepath 0.9 0.7 0.7 setrgbcolor fill stroke grestore }bind def";
+print "/blue {gsave 0 360 arc closepath 0.7 0.7 0.9 setrgbcolor fill  stroke grestore }bind def";
+print "/bcir {gsave 0 360 arc closepath 0.3 0.3 0.3 setrgbcolor fill  stroke grestore }bind def";
+print "/wcir {gsave 0 360 arc closepath 0.9 0.9 0.9 setrgbcolor fill  stroke grestore }bind def";
+
+print"/textN { pop moveto (N) show newpath }bind def\n";
+print"/textS{ pop moveto (S) show  newpath}bind def\n";
+print"/textE{ pop moveto (E) show  newpath}bind def\n";
+print"/textW { pop moveto (W) show  newpath}bind def\n";
+print"/textSE { pop moveto (SE) show  newpath}bind def\n";
+print"/textNW { pop moveto (NW) show  newpath}bind def\n";
+print"/textSW { pop moveto (SW) show  newpath}bind def\n";
+print"/textNE { pop moveto (NE) show  newpath}bind def\n";
+ 
+ print "/fcir {0 360 arc closepath fill stroke}bind def\n";
+ print "/myarrow {moveto lineto stroke}bind def\n";
+ print "/bline { lineto gsave 0 0 1 setrgbcolor 0.05 setlinewidth stroke grestore}bind def\n";
+ print "/rline { gsave 1 0 0 setrgbcolor 0.05 setlinewidth lineto stroke grestore}bind def\n";
+ print "/c {pop 1 index 1 index lineto stroke moveto} bind def\n";
+ print "/cf {gsave 0 360 arc closepath } bind def\n";
+ print "/f {setrgbcolor fill stroke grestore} bind def\n"; 
+ print "/dc {0 360 arc  gsave [0.2 0.2] 0.12 setdash .03  setlinewidth stroke";
+ print " grestore  newpath } bind def\n";
+ print "/mypageinit {matrix currentmatrix /originmat exch def /umatrix {originmat matrix concatmatrix setmatrix} def [28.3465 0 0 28.3465 10.5 100.0] umatrix ", $linewidth, " setlinewidth} bind def\n";
+print "
+/Times-Roman findfont
+0.2 scalefont
+setfont
+";
+
+  open(INPUT,$filename) or die "Can't open $FOO: $!";
+  $particle_counter=0;
+  $page_counter=0;
+  while(<INPUT>){
+   if(/^#echo (.*)/){
+    print $1;
+   } 
+   next if(/^#/);
+   chomp;
+   if($particle_counter==0){
+    /^(\S*)/;
+    if($page_counter>0){
+     print "showpage\n";
+    }
+    $particle_counter=$1;
+    $page_counter++; 
+    print "%%Page: ", $page_counter,"\n";
+    print "mypageinit\n";
+   } else {
+    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; # xball format 2d
+    $x=$xoffset+$scale*$1;
+    $y=$yoffset+$scale*$2;
+    $r=$scale*$3;
+     printf("%f %f %f cir\n", $x, $y, $r);
+    $particle_counter--;
+   }
+  }
+  print "showpage quit\n";
+  exit;
+ }
+}
