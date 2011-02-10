@@ -8,13 +8,13 @@ using namespace std;
 
 double t=0;
 double maxtime=10;
-double dt=0.000001;
+double dt=0.0001;
 double outDt=0.05;
 double L=30;
 double G=-10;
 
-size_t NL=1;
-size_t NC=1;
+size_t NL=5;
+size_t NC=5;
 size_t N=NL*NC;
 
 class CWall{
@@ -61,22 +61,11 @@ void cal_forces(CParticle p[]){
 	for(int i=0; i<N; i++){
 		p[i].fx=0;
 		p[i].fy=G*p[i].m;
-		//cerr<<p[i].m<<endl;
-		}
 
-	for(int i=0; i<N; i++){
 		wall.interact(p[i]);
-		}
-
-	for(int i=0; i<N; i++){
-		for(int j=i+1; j<N; j++){
-		//cerr<< i <<"\t"<< j<<endl;
+		for(int j=0; j<i; j++){
 		p[i].interact(p[j]);
-		}
-	
-	for(int i=0; i<N; i++){
-		p[i].update_accel();
-		//cerr<<p[i].m<<endl;
+
 		}
 	}
 	}
@@ -102,6 +91,8 @@ void output(CParticle *p){
 			out.close();
                         count=0;
                         outN++;
+			cout<< t <<"\t"<< cal_energy(p) <<endl;
+
                         //Energy=rEnergy+kEnergy+pEnergy;
                         //outEnergy<<setprecision(14)<<t<<"  "<<Energy<<"  "<<kEnergy<<"  "<<pEnergy<<"  "<<rEnergy <<endl;
                         //rEnergy=0; pEnergy=0; kEnergy=0; Energy=0;
@@ -126,13 +117,18 @@ double v0=10;
    p[i*NC+j].set_pos(2.0*r+j*(L-2.5*r)/NC +(i%2)*0.5*L/NC, 2.0*r + i*L/NC) ;
    double theta=(rand()%100001)*6.28318e-5;
    p[i*NC+j].set_vel(v0*cos(theta), v0*sin(theta));
-   p[i*NC+j].q=0;  
-   p[i*NC+j].w=0;
+//   p[i*NC+j].q=0;  
+//   p[i*NC+j].w=0;
   }; 
  };
 
 
 while (t<maxtime){
+
+	cal_forces(p);
+	for(int i=0; i<N; i++){
+		p[i].update_accel();
+	}
 
 	for(int i=0; i<N; i++){
 		p[i].predict(dt);
@@ -141,16 +137,24 @@ while (t<maxtime){
 	cal_forces(p);
 
 	for(int i=0; i<N; i++){
+		p[i].update_accel2();
+		//cerr<<p[i].m<<endl;
+	}
+
+	for(int i=0; i<N; i++){
 		p[i].correct();
 		}
-	
-	cout<< t <<"\t"<< cal_energy(p) <<endl;
+
+	for(int i=0; i<N; i++){
+		p[i].update_accel3();
+	}
+
+//	cout<< t <<"\t"<< cal_energy(p) <<endl;
 	t+=dt;
 
 	output(p);
 	}
 
 
- 
 return 0;
 }
