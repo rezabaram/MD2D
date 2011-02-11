@@ -69,6 +69,10 @@ class CWall
 			segments.at(i).interact(p);
 			}
 		}
+
+	void apply_motion(){
+		
+		}
 	
  	private:
 	vector<CLineSegment> segments;

@@ -98,20 +98,24 @@ double v0=10;
 
 while (t<maxtime){
 
+		//wall.predict(dt);
 	for(int i=0; i<N; i++){
 		p[i].predict(dt);
 		}
 	
 	cal_forces(p);
 
+		//wall.update ...(dt);
 	for(int i=0; i<N; i++){
 		p[i].update_temp_accel();
 	}
 
+	//wall.correct();
 	for(int i=0; i<N; i++){
 		p[i].correct();
 		}
 
+	//wall.update...
 	for(int i=0; i<N; i++){
 		p[i].update_accel();
 	}
