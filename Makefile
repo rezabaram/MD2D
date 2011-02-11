@@ -8,6 +8,6 @@ a.out: main.cc *.h
 
 
 frames:
-	sh genframe.sh out*
+	sh genframe.sh out?????
 clean:
-	rm -f *.jpg *.ps out0*
+	rm -f *.jpg *.ps 
