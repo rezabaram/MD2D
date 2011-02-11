@@ -130,7 +130,12 @@ setfont
     $x=$xoffset+$scale*$1;
     $y=$yoffset+$scale*$2;
     $r=$scale*$3;
+    $angle=$4;
+    $x2=$x+$r*cos($angele);
+    $y2=$y+$r*sin($angele);
      printf("%f %f %f cir\n", $x, $y, $r);
+     printf("newpath %f %f moveto\n", $x, $y);
+     printf("%f %f lineto stroke\n", $x2, $y2);
     $particle_counter--;
    }
   }

@@ -3,7 +3,13 @@ files=$*
 
 for f in $files
 do
-	./xbps -s1 -x0 -y0 $f > $f.ps
+	#just to create new frames
+        if [ -f $f.jpg ]
+        then
+                continue
+        fi
+
+	./xbps -x0 -y0 -s1  $f > $f.ps
 	convert $f.ps $f.jpg
 done
 	

@@ -10,11 +10,11 @@ double t=0;
 double maxtime=10;
 double dt=0.0001;
 double outDt=0.05;
-double L=30;
+double L=20;
 double G=-10;
 
-size_t NL=5;
-size_t NC=5;
+size_t NL=25;
+size_t NC=25;
 size_t N=NL*NC;
 
 class CWall{
@@ -113,7 +113,7 @@ double v0=10;
  for(size_t i=0;i<NL;i++){
   for(size_t j=0;j<NC;j++){
    double r=1;
-   p[i*NC+j].r=r;
+   p[i*NC+j].r=L/(double)(NC+3)/2;
    p[i*NC+j].set_pos(2.0*r+j*(L-2.5*r)/NC +(i%2)*0.5*L/NC, 2.0*r + i*L/NC) ;
    double theta=(rand()%100001)*6.28318e-5;
    p[i*NC+j].set_vel(v0*cos(theta), v0*sin(theta));

@@ -22,7 +22,7 @@ class CParticle{
 		vx=0; vy=0;
 		ax=0; ay=0;
 		ax0=0; ay0=0;
-//		q=0;w=0;                                 // after we put
+		q=0;w=0;                                 // after we put
 //		aq=0; aq=0;
 //		aq0=0; aq0=0;                                 // after we put
 		fx=0; fy=0;
@@ -135,7 +135,7 @@ class CParticle{
 		}
 
 	void print(ostream &out=cout)const{
-		out<< x <<"\t"<< y <<"\t"<< r <<endl;
+		out<< x <<"\t"<< y <<"\t"<< r <<"\t"<<q<<endl;
 		}
 
 	double kn; // cn;
@@ -144,7 +144,7 @@ class CParticle{
 	double vx, vy;
 	double ax, ay;
 	double ax0, ay0, axtemp, aytemp;
-//	double w, q, aq, aq0, aq1;
+	double w, q, aq, aq0, aq1;
 	double fx, fy;
 
 	double m;
