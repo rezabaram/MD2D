@@ -15,16 +15,7 @@ class CParticle{
 		init();
 		}
 
-	void init(){
-		kn=1e+6;
-		x=0; y=0; r=1;
-		vx=0; vy=0;
-		ax=0; ay=0;
-		ax0=0; ay0=0;
-		fx=0; fy=0;
-		density=1;
-		update_mass();
-		}
+	void init();
 	void update_mass(){
 		m=density*M_PI*r*r;
 		}
@@ -108,13 +99,15 @@ class CParticle{
 		}
 
 	void print(ostream &out=cout)const{
-		out<< x <<"\t"<< y <<"\t"<< r <<endl;
+		out<< x <<"\t"<< y <<"\t"<< r <<"\t"<<q<<endl;
 		}
 
 	double kn;
 	double x, y, r;
 	double vx, vy;
 	double ax, ay;
+
+	double w, q, aq, aq0, aq1;
 	double fx, fy;
 	double m;
 	private:
@@ -124,5 +117,19 @@ class CParticle{
 	double xtemp, ytemp;
 	double ax0, ay0, axtemp, aytemp;
 	};
+
+void CParticle::init() {
+	kn=1e+6;
+	x=0; y=0; r=1;
+	vx=0; vy=0;
+	ax=0; ay=0;
+	ax0=0; ay0=0;
+	q=0;w=0;                                 // after we put
+//		aq=0; aq=0;
+//		aq0=0; aq0=0;                                 // after we put
+	fx=0; fy=0;
+	density=1;
+	update_mass();
+	}
 
 #endif /* PARTICLE_H */
