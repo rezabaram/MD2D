@@ -15,8 +15,8 @@ double outDt=0.05;
 double L=20;
 double G=-10;
 
-size_t NL=25;
-size_t NC=25;
+size_t NL=10;
+size_t NC=10;
 size_t N=NL*NC;
 
 
@@ -39,6 +39,7 @@ void cal_forces(CParticle p[]){
 	for(int i=0; i<N; i++){
 		p[i].fx=0;
 		p[i].fy=G*p[i].m;
+		p[i].tq=0;
 
 		wall.interact(p[i]);
 
