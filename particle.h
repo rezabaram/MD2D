@@ -76,12 +76,16 @@ class CParticle{
 		dfy= fn*ny + ft*ty;
 		fx+=dfx;
 		fy+=dfy;
-      		tq+=ft*r;
+		if(!rotation_fixed) tq+=ft*r;
       
 		p.fx-=dfx;
 		p.fy-=dfy;
-		p.tq+=(ft*p.r);
+		if(!p.rotation_fixed) p.tq+=(ft*p.r);
 
+		}
+	void fix_rotation(double w0){
+		w=w0;
+		rotation_fixed=true;
 		}
 
 	double energy(){
@@ -135,6 +139,7 @@ class CParticle{
 	double fx, fy, tq;
 	double m, Im;
 	private:
+	bool rotation_fixed;
 
 	double density;
 	double tempDt;
@@ -143,6 +148,7 @@ class CParticle{
 	};
 
 void CParticle::init() {
+	rotation_fixed=false;
 	kn=1e+6; mu=.8;
 	x=0; y=0; r=1;
 	vx=0; vy=0;
