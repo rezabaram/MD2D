@@ -60,23 +60,27 @@ class CParticle{
 		double nx=(x-p.x)/d;
 		double ny=(y-p.y)/d;
 
-		double tx=-ny;
-		double ty=nx;
+		double tx=ny;
+		double ty=-nx;
 
-		double vr_x = vx-p.vx - ny*r*(w + p.w);
-		double vr_y = vy-p.vy + nx*r*(w + p.w);
+		double vr_x = vx-p.vx + tx*r*(w + p.w);
+		double vr_y = vy-p.vy + ty*r*(w + p.w);
 
 		double vr_t = vr_x*tx + vr_y*ty;
 		
-		double ft=(vr_t<vt)?(-mu*fn*vr_t/vt):(-mu*fn);    // dinamic friction aproximation
+	//	double ft=(vr_t<vt)?(-mu*fn*vr_t/vt):(-mu*fn);    // dynamic friction approximation
+		double ft=(-mu*fn*vr_t/10.);
 
-		fx+=fn*nx + ft*tx;
-		fy+=fn*ny + ft*ty;
-      tq+=ft*r/Im;
+		double dfx, dfy;
+		dfx= fn*nx + ft*tx;
+		dfy= fn*ny + ft*ty;
+		fx+=dfx;
+		fy+=dfy;
+      		tq+=ft*r;
       
-		p.fx-=(fn*nx + ft*tx);
-		p.fy-=(fn*ny + ft*ty);
-		p.tq+=(ft*p.r/p.Im);
+		p.fx-=dfx;
+		p.fy-=dfy;
+		p.tq+=(ft*p.r);
 
 		}
 
@@ -85,17 +89,17 @@ class CParticle{
 		}
 
 	void predict(double dt){ // (Beeman's algorithm)
-	 x+=(vx + (2.0*ax/3.0 - ax0/6.0)*dt)*dt; 
-	 y+=(vy + (2.0*ay/3.0 - ay0/6.0)*dt)*dt; 
-	 q+=(w + (2.0*aq/3.0 - aq0/6.0)*dt)*dt; 
-    if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
-	tempDt=dt;
-	}
+		 x+=(vx + (2.0*ax/3.0 - ax0/6.0)*dt)*dt; 
+		 y+=(vy + (2.0*ay/3.0 - ay0/6.0)*dt)*dt; 
+		 q+=(w + (2.0*aq/3.0 - aq0/6.0)*dt)*dt; 
+		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
+		tempDt=dt;
+		}
 
 	void update_temp_accel(){
 		axtemp=fx/m;
 		aytemp=fy/m;
-		aqtemp=tq/m;
+		aqtemp=tq/Im;
 		}
 
 	void update_accel(){
@@ -114,11 +118,11 @@ class CParticle{
 		dtt=6.*dt*dt;
 		vx+=(axtemp/3+5*ax/6-ax0/6)*dt;
 		vy+=(aytemp/3+5*ay/6-ay0/6)*dt;
-		w+=(aqtemp/3+5*aq/6-aq0/6)*dt;
+		w +=(aqtemp/3+5*aq/6-aq0/6)*dt;
 		}
 
 	void print(ostream &out=cout)const{
-		out<< x <<"\t"<< y <<"\t"<< r <<"\t"<<q<<endl;
+		out<< x <<"\t"<< y <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
 		}
 
 	double kn,mu,vt;
