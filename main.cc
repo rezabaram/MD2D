@@ -15,8 +15,8 @@ double outDt=0.01;
 double L=20;
 double G=-10;
 
-size_t NL=50;
-size_t NC=50;
+size_t NL=20;
+size_t NC=20;
 size_t N=NL*NC;
 
 
@@ -45,6 +45,11 @@ void cal_forces(CParticle p[]){
 
 		for(int j=0; j<i; j++){
 		p[i].interact(p[j]);
+		if(p[j].has_shadow){
+			p[j].shift_to_shadow();
+			p[i].interact(p[j]);
+			p[j].shift_back();
+			}
 
 		}
 	}
@@ -89,14 +94,17 @@ double v0=10;
  for(size_t i=0;i<NL;i++){
   for(size_t j=0;j<NC;j++){
    double r=L/(double)(NC+1)/2.9;
-   p[i*NC+j].r=r*(1+.7*(1-drand48()));
+   p[i*NC+j].r=r*(1+.3*(1-drand48()));
    p[i*NC+j].set_pos(2.0*r+j*(L-2.5*r)/NC +(i%2)*0.5*L/NC, 2.0*r + i*L/NC) ;
    double theta=(rand()%100001)*M_PI*2.0e-5;
    p[i*NC+j].set_vel(v0*cos(theta), v0*sin(theta));
-   if(drand48()<0.1)p[i*NC+j].fix_rotation(20);
   }; 
  };
 
+   p[120].r=1;
+   p[120].fix_rotation(20);
+   p[250].fix_rotation(-20);
+   p[250].r=1;
 
 while (t<maxtime){
 
@@ -121,7 +129,11 @@ while (t<maxtime){
 	for(int i=0; i<N; i++){
 		p[i].update_accel();
 	}
-
+	if(fabs(t-1)<0.0001){
+		for(int i=0; i<N; i++){
+			p[i].mu=150;
+		}
+		}
 	t+=dt;
 	output(p);
 	}

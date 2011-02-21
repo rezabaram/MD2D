@@ -149,7 +149,7 @@ class CParticle{
 
 void CParticle::init() {
 	rotation_fixed=false;
-	kn=1e+6; mu=.8;
+	kn=1e+6; mu=0.8;
 	x=0; y=0; r=1;
 	vx=0; vy=0;
 	ax=0; ay=0;
