@@ -4,6 +4,7 @@
 #include<fstream>
 #include<stdlib.h>
 #include<math.h>
+#include"vec.h"
 using namespace std;
 
 
@@ -18,23 +19,22 @@ class CParticle{
 	void init();
 	void update_mass(){
 		m=density*M_PI*r*r;
+		Im=m*r*r/2.0;
 		}
 
-	CParticle(double _x, double _y, double _r){
-		init();
-		set_pos(_x,_y);
+	void set_r(double _r){
 		r=_r;
-		density=1;
+		update_mass();
 		}
-	
-	void set_pos(double _x, double _y ){
+	double get_r(){
+		return r;
+		}
+	void set_pos(const vec2d &_x){
 		x=_x; 
-		y=_y;
 		}
 
-	void set_vel(double _vx, double _vy ){
-		vx=_vx; 
-		vy=_vy;
+	void set_vel(const vec2d &_v){
+		v=_v; 
 		}
 
 
@@ -43,45 +43,35 @@ class CParticle{
 		}
 */
 	double dist2(const CParticle &p)const{
-		return (x-p.x)*(x-p.x)+(y-p.y)*(y-p.y);
+		return (x-p.x).abs2();
 		}
-/*
-	bool collide(const CParticle &p)const{
-		};
-*/
 	void interact(CParticle &p){
+	TRY
 		double d2=dist2(p);
 		if( d2 > (r+p.r)*(r+p.r))return;
 		double d=sqrt(d2);
 		double ovl= fabs(d - (r+p.r));
 
-   	double fn=kn*pow(ovl,1.5);
+   		double fn=kn*pow(ovl,1.5);
 
-		double nx=(x-p.x)/d;
-		double ny=(y-p.y)/d;
+		ERROR(d==0,"Interacting particles either identical or have identical centers.");
+		vec2d n=(x-p.x)/d;
+		vec2d t(n(1), -n(0));
 
-		double tx=ny;
-		double ty=-nx;
+		vec2d vr = v-p.v + r*(w + p.w)*t;
 
-		double vr_x = vx-p.vx + tx*r*(w + p.w);
-		double vr_y = vy-p.vy + ty*r*(w + p.w);
-
-		double vr_t = vr_x*tx + vr_y*ty;
+		double vr_t = vr*t;
 		
 	//	double ft=(vr_t<vt)?(-mu*fn*vr_t/vt):(-mu*fn);    // dynamic friction approximation
 		double ft=(-mu*fn*vr_t/10.);
 
-		double dfx, dfy;
-		dfx= fn*nx + ft*tx;
-		dfy= fn*ny + ft*ty;
-		fx+=dfx;
-		fy+=dfy;
+		vec2d df= fn*n + ft*t;
+		f+=df;
 		if(!rotation_fixed) tq+=ft*r;
       
-		p.fx-=dfx;
-		p.fy-=dfy;
+		p.f-=df;
 		if(!p.rotation_fixed) p.tq+=(ft*p.r);
-
+	CATCH
 		}
 	void fix_rotation(double w0){
 		w=w0;
@@ -89,29 +79,25 @@ class CParticle{
 		}
 
 	double energy(){
-		return 0.5*m*(vx*vx+vy*vy);
+		return 0.5*m*v.abs2();
 		}
 
 	void predict(double dt){ // (Beeman's algorithm)
-		 x+=(vx + (2.0*ax/3.0 - ax0/6.0)*dt)*dt; 
-		 y+=(vy + (2.0*ay/3.0 - ay0/6.0)*dt)*dt; 
+		 x+=(v + (2.0*a/3.0 - a0/6.0)*dt)*dt; 
 		 q+=(w + (2.0*aq/3.0 - aq0/6.0)*dt)*dt; 
 		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
 		tempDt=dt;
 		}
 
 	void update_temp_accel(){
-		axtemp=fx/m;
-		aytemp=fy/m;
+		atemp=f/m;
 		aqtemp=tq/Im;
 		}
 
 	void update_accel(){
-		ax0=ax;
-		ay0=ay;
+		a0=a;
 		aq0=aq;
-		ax=axtemp;
-		ay=aytemp;
+		a=atemp;
 		aq=aqtemp;
 		}
 
@@ -120,48 +106,47 @@ class CParticle{
 		static double dtt;
 		double dt=tempDt;
 		dtt=6.*dt*dt;
-		vx+=(axtemp/3+5*ax/6-ax0/6)*dt;
-		vy+=(aytemp/3+5*ay/6-ay0/6)*dt;
+		v+=(atemp/3+5*a/6-a0/6)*dt;
 		w +=(aqtemp/3+5*aq/6-aq0/6)*dt;
 		}
 
 	void print(ostream &out=cout)const{
-		out<< x <<"\t"<< y <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
+		out<< x <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
 		}
 
 	double kn,mu,vt;
-	double x, y, r;
-	double vx, vy;
-	double ax, ay;
+	vec2d x, v, a;
 	double vtr; //velocidade de transição
 
 	double w, q, aq;
-	double fx, fy, tq;
+	vec2d f;
+	double tq;
 	double m, Im;
 	private:
 	bool rotation_fixed;
 
 	double density;
+	double r;
 	double tempDt;
-	double xtemp, ytemp;
-	double ax0, ay0, aq0, axtemp, aytemp, aqtemp;
+	vec2d xtemp;
+	vec2d a0,  atemp;
+	double aqtemp, aq0;
 	};
 
 void CParticle::init() {
 	rotation_fixed=false;
 	kn=1e+6; mu=0.8;
-	x=0; y=0; r=1;
-	vx=0; vy=0;
-	ax=0; ay=0;
-	ax0=0; ay0=0;
+	x=0; r=1;
+	v=0;
+	a=0;
+	a0=0;
 	q=0;w=0;
 	vt=2.0;
 	aq=0; aq=0;
 	aq0=0; aq0=0;
-	fx=0; fy=0, tq=0;
+	f=0; tq=0;
 	density=1;
 	update_mass();
-	Im=m*r*r/2.0;
 	}
 
 #endif /* PARTICLE_H */

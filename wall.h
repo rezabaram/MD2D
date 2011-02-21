@@ -7,58 +7,59 @@ using namespace std;
 #define sgn(a) ((a) > 0) ? (1.0) : (-1.0)
 class CLineSegment{
 	public:
-	CLineSegment(double _x1, double _y1, double _x2, double _y2){
+	CLineSegment(const vec2d & _x1, const vec2d &_x2){
 		x1=_x1;
 		x2=_x2;
-		y1=_y1;
-		y2=_y2;
 		}
 
 	void interact(CParticle &p){
-		double wl=sqrt((x2-x1)*(x2-x1)+(y2-y1)*(y2-y1));
+		vec2d t=(x2-x1);
+		double wl=t.abs();
+		t*=1.0/wl;//normalize the vector t;
 
-		double tx=(x2-x1)/wl,ty=(y2-y1)/wl;
-		double nx=ty,ny=-tx;
-		double qx=(p.x-x1),qy=(p.y-y1);
+		vec2d n(t(1),-t(0));
+		vec2d q=(p.x-x1);
 		int sg = 1;
 
-		double l=(qx*tx + qy*ty);
+		double l=q*t;//inner product
 		double d;
 
+		double r=p.get_r();
 		if(l<0){
-			d=sqrt(qx*qx + qy*qy);
-			if( d > p.r)return;
-			nx=qx/d; ny=qy/d;
+			d=q.abs();
+			if( d > r)return;
+			n=q/d; 
 		}else{
 
 			if(l>wl){
-				qx=(p.x-x2); qy=(p.y-y2);
-				d=sqrt(qx*qx + qy*qy);
-				if( d > p.r)return;
-				nx=qx/d; ny=qy/d;
+				q=(p.x-x2); 
+				d=q.abs();
+				if( d > r)return;
+				n=q/d; 
 			}else{
-				d=fabs(qx*nx + qy*ny);
-				if( d > p.r)return;
-				sg=sgn(qx*nx + qy*ny);
+				d=fabs(q*n);
+				if( d > r)return;
+				sg=sgn(q*n);
 			};
 		};
 
-		double ovl=fabs(d - p.r);	//double vn=p.vy;
+		double ovl=fabs(d - r);	//double vn=p.vy;
    		double fn=sg*p.kn*pow(ovl,1.5);
-		p.fx+=fn*nx; p.fy+=fn*ny;
+		p.f+=fn*n; 
 
 		}
 
-	double x1, x2;
-	double y1, y2;
+	vec2d x1, x2;
 	};
+
+
 class CWall
 	{
 	public:
 	CWall(){}
 
 	void add_segment(double _x1, double _y1, double _x2, double _y2){
-		add_segment(CLineSegment(_x1, _y1, _x2, _y2));
+		add_segment(CLineSegment(vec2d(_x1, _y1), vec2d(_x2, _y2)));
 		}
 
 	void add_segment(const CLineSegment &seg){
