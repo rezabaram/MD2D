@@ -52,6 +52,27 @@ class CLineSegment{
 	vec2d x1, x2;
 	};
 
+class CLine
+	//has eq: n.(X-X0)=0;
+	{
+	public:
+	CLine(const vec2d &_x, const vec2d &_n):x(_x), n(_n){
+		n.normalize();
+		}
+	double distance(const vec2d &_x){
+		return (_x-x)*n;
+		}
+	void interact(CParticle &p){
+		double d=distance(p.x);
+		double ovl=d - p.get_r();	
+		if(sgn(ovl)>0)return;
+   		double fn=p.kn*pow(fabs(ovl),1.5);
+		p.f+=fn*n;
+		}
+
+	vec2d x, n;
+ 	private:
+	};
 
 class CWall
 	{
@@ -65,9 +86,15 @@ class CWall
 	void add_segment(const CLineSegment &seg){
 		segments.push_back(seg);
 		}
+	void add_line(const vec2d &_x,const vec2d &_n){
+		lines.push_back(CLine(_x,_n));
+		}
 	void interact(CParticle &p){
 		for(int i=0; i<segments.size(); i++){
 			segments.at(i).interact(p);
+			}
+		for(int i=0; i<lines.size(); i++){
+			lines.at(i).interact(p);
 			}
 		}
 
@@ -77,6 +104,7 @@ class CWall
 	
  	private:
 	vector<CLineSegment> segments;
+	vector<CLine> lines;
 	
 	};
 

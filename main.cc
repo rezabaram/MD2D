@@ -6,6 +6,11 @@
 #include"MersenneTwister.h"
 #include"wall.h"
 
+//origin
+const vec2d O(0,0);
+//unit vectors
+const vec2d ux(1,0);
+const vec2d uy(0,1);
 
 using namespace std;
 
@@ -79,10 +84,14 @@ CParticle p[N];
 void Initialize(){
 	cerr<< N <<endl;
 
-	wall.add_segment(0,0,L,0);
-	wall.add_segment(0,0,0,L);
-	wall.add_segment(L,0,L,L);
-	wall.add_segment(0,L,L,L);
+	//wall.add_segment(0,0,L,0);
+	//wall.add_segment(0,0,0,L);
+	//wall.add_segment(L,0,L,L);
+	//wall.add_segment(0,L,L,L);
+	wall.add_line(O,ux);
+	wall.add_line(O,uy);
+	wall.add_line(L*ux+L*uy,-ux);
+	wall.add_line(L*ux+L*uy,-uy);
 
 
 
@@ -155,5 +164,4 @@ int main(int pi, char **params){
 	e.Report();
 	return 1;
 	}
-return 0;
 }
