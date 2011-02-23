@@ -122,8 +122,8 @@ class CParticle{
 	vec2d f;
 	double tq;
 	double m, Im;
-	private:
 	bool rotation_fixed;
+	private:
 
 	double density;
 	double r;

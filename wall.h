@@ -45,8 +45,16 @@ class CLineSegment{
 
 		double ovl=fabs(d - r);	//double vn=p.vy;
    		double fn=sg*p.kn*pow(ovl,1.5);
-		p.f+=fn*n; 
 
+		vec2d vr = p.v + r*p.w*t;
+
+		double vr_t = vr*t;
+
+    	double ft=(fn>0)?(-p.mu*fn*vr_t/10.):(p.mu*fn*vr_t/10.);
+
+		vec2d df= fn*n + ft*t;
+		p.f+=df;
+		if(!p.rotation_fixed) p.tq+=ft*r;
 		}
 
 	vec2d x1, x2;
@@ -63,11 +71,23 @@ class CLine
 		return (_x-x)*n;
 		}
 	void interact(CParticle &p){
+		vec2d t(n(1),-n(0));
 		double d=distance(p.x);
-		double ovl=d - p.get_r();	
+		double r=p.get_r();
+		double ovl=d - r;	
 		if(sgn(ovl)>0)return;
    		double fn=p.kn*pow(fabs(ovl),1.5);
-		p.f+=fn*n;
+   		
+		vec2d vr = p.v + r*p.w*t;
+
+		double vr_t = vr*t;
+
+    	double ft=-p.mu*fn*vr_t/10.;
+
+		vec2d df= fn*n + ft*t;
+		p.f+=df;
+		if(!p.rotation_fixed) p.tq+=ft*r;
+
 		}
 
 	vec2d x, n;

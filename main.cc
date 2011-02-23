@@ -22,7 +22,7 @@ double maxtime=10;
 double dt=0.0001;
 double outDt=0.02;
 double L=20;
-vec2d G(0,0);
+vec2d G(0,-10);
 
 const size_t NL=10;
 const size_t NC=10;
@@ -83,17 +83,17 @@ void output(CParticle *p){
 CParticle p[N];
 void Initialize(){
 	cerr<< N <<endl;
+/*
+	wall.add_segment(0,0,L,0);
+	wall.add_segment(0,0,0,L);
+	wall.add_segment(L,0,L,L);
+	wall.add_segment(0,L,L,L);
+*/
 
-	//wall.add_segment(0,0,L,0);
-	//wall.add_segment(0,0,0,L);
-	//wall.add_segment(L,0,L,L);
-	//wall.add_segment(0,L,L,L);
 	wall.add_line(O,ux);
 	wall.add_line(O,uy);
 	wall.add_line(L*ux+L*uy,-ux);
 	wall.add_line(L*ux+L*uy,-uy);
-
-
 
 	//INIT
 	double v0=10;
