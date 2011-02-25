@@ -11,5 +11,8 @@ frames:
 clean:
 	rm -f *.jpg *.ps 
 
+bak:
+	mv -f out0* log* energy trash
+
 movie:
 	mencoder mf://*.jpg -mf fps=15:type=jpg -ovc lavc -ffourcc XVID -nosound -o out.avi

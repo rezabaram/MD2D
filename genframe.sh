@@ -10,7 +10,7 @@ do
         fi
 
 	echo $f.jpg
-	./xbps -x0 -y0 -s1  $f > $f.ps
+	./xbps -x0 -y0 -s20  $f > $f.ps
 	convert -type TrueColor -quality 100 $f.ps $f.jpg
 done
 	

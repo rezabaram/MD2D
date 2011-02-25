@@ -311,6 +311,7 @@ class Vec{
 	}
 
 typedef Vec<2,double> vec2d;
+typedef Vec<2,int> ivec2d;
 typedef Vec<3,double> vec;
 typedef Vec<3,double> vec3d;
 typedef Vec<4,double> vec4d;
