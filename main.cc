@@ -146,14 +146,14 @@ void Run(){
 	output(p);
 	while (t<maxtime){
 
-			//wall.predict(dt);
+		//wall.predict(dt);
 		for(int i=0; i<N; i++){
 			p[i].predict(dt);
 			}
 		
 		cal_forces(p);
 
-			//wall.update ...(dt);
+		//wall.update.
 		for(int i=0; i<N; i++){
 			p[i].update_accel();
 		}

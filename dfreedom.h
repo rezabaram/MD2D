@@ -30,4 +30,5 @@ class DFreedom
 	T a0, atemp;
 	double tempDt;
 	};
+
 #endif /* DEGREE_OF_FREEDOM_H */

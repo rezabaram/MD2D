@@ -4,16 +4,15 @@
 #include<fstream>
 #include<stdlib.h>
 #include<math.h>
-#include"vec.h"
-#include"degree_of_freedom.h"
+#include"object.h"
 using namespace std;
 
 
-class CParticle{
+class CParticle: public CObject{
 
 	public:
 	
-	CParticle():translation(x,v,a), rotation(q,w,aq){
+	CParticle(){
 		init();
 		}
 
@@ -83,59 +82,27 @@ class CParticle{
 		return 0.5*m*v.abs2();
 		}
 
-	void predict(double dt){ // (Beeman's algorithm)
-		translation.predict(dt);
-		rotation.predict(dt);
-		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
-		}
-
-	void update_accel(){
-		translation.update_accel(f/m);
-		rotation.update_accel(tq/Im);
-		}
-
-	void correct(){
-		translation.correct();
-		rotation.correct();
-		}
 
 	void print(ostream &out=cout)const{
 		out<< x <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
 		}
 
 	double kn,mu,vt;
-	vec2d x, v, a;
 	double vtr; //velocidade de transição
 
-	double w, q, aq;
-	vec2d f;
-	double tq;
-	double m, Im;
 	bool rotation_fixed;
 	private:
 
 	double density;
 	double r;
 	double tempDt;
-	vec2d xtemp;
-	vec2d a0,  atemp;
-	double aqtemp, aq0;
-	DFreedom<vec2d> translation;//translational
-	DFreedom<double> rotation;//rotational
 	};
 
 void CParticle::init() {
 	rotation_fixed=false;
 	kn=1e+6; mu=0.8;
-	x=0; r=1;
-	v=0;
-	a=0;
-	a0=0;
-	q=0;w=0;
+	r=1;
 	vt=2.0;
-	aq=0; aq=0;
-	aq0=0; aq0=0;
-	f=0; tq=0;
 	density=1;
 	update_mass();
 	}

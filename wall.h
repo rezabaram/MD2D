@@ -1,6 +1,7 @@
 #ifndef WALL_H
 #define WALL_H 
 #include<vector>
+#include"object.h"
 #include"particle.h"
 using namespace std;
 
@@ -60,11 +61,12 @@ class CLineSegment{
 	vec2d x1, x2;
 	};
 
-class CLine
+class CLine : public CObject
 	//has eq: n.(X-X0)=0;
 	{
 	public:
-	CLine(const vec2d &_x, const vec2d &_n):x(_x), n(_n){
+	CLine(const vec2d &_x, const vec2d &_n):n(_n){
+		x=_x;
 		n.normalize();
 		}
 	double distance(const vec2d &_x){
@@ -82,7 +84,7 @@ class CLine
 
 		double vr_t = vr*t;
 
-    	double ft=-p.mu*fn*vr_t/10.;
+    		double ft=-p.mu*fn*vr_t/10.;
 
 		vec2d df= fn*n + ft*t;
 		p.f+=df;
@@ -90,9 +92,7 @@ class CLine
 
 		}
 
-	vec2d x, n;
-	vec2d xtemp;
-	vec2d a0,  atemp;
+	vec2d n;
  	private:
 	};
 
@@ -100,23 +100,34 @@ class CWall
 	{
 	public:
 	CWall(){}
-
-	void add_segment(double _x1, double _y1, double _x2, double _y2){
-		add_segment(CLineSegment(vec2d(_x1, _y1), vec2d(_x2, _y2)));
-		}
-
-	void add_segment(const CLineSegment &seg){
-		segments.push_back(seg);
-		}
-	void add_line(const vec2d &_x,const vec2d &_n){
-		lines.push_back(CLine(_x,_n));
-		}
-	void interact(CParticle &p){
+	~CWall(){
+		//cleaning the memory which was dynamcially allocated
 		for(int i=0; i<segments.size(); i++){
-			segments.at(i).interact(p);
+			delete segments.at(i);
 			}
 		for(int i=0; i<lines.size(); i++){
-			lines.at(i).interact(p);
+			delete lines.at(i);
+			}
+		}
+
+	void add_segment(double _x1, double _y1, double _x2, double _y2){
+		add_segment(new CLineSegment(vec2d(_x1, _y1), vec2d(_x2, _y2)));
+		}
+
+	void add_segment(CLineSegment *seg){
+		segments.push_back(seg);
+		}
+
+	void add_line(const vec2d &_x,const vec2d &_n){
+		lines.push_back(new CLine(_x,_n));
+		}
+
+	void interact(CParticle &p){
+		for(int i=0; i<segments.size(); i++){
+			segments.at(i)->interact(p);
+			}
+		for(int i=0; i<lines.size(); i++){
+			lines.at(i)->interact(p);
 			}
 		}
 
@@ -125,8 +136,8 @@ class CWall
 		}
 	
  	private:
-	vector<CLineSegment> segments;
-	vector<CLine> lines;
+	vector<CLineSegment*> segments;
+	vector<CLine*> lines;
 	
 	};
 
