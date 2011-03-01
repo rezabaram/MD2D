@@ -112,13 +112,13 @@ void Initialize(){
 	wall.add_line(ux+uy,-ux);
 	wall.add_line(ux+uy,-uy);
 
-	double r=0.003;
-	double r_var=0.2;
+	double r=0.03;
+	double r_var=0.5;
 	grid.setup(O, ux+uy, 2.5*r*(1+0.5*r_var));
 	N=grid.nx*grid.ny;
 	p=new CParticle[N];
 	cerr<< "Number of Paeticles: "<<N <<endl;
-	dt=0.01*r;
+	dt=0.005*r;
 
 	//INIT
 	double v0=5*r;

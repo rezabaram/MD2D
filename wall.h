@@ -91,6 +91,8 @@ class CLine
 		}
 
 	vec2d x, n;
+	vec2d xtemp;
+	vec2d a0,  atemp;
  	private:
 	};
 

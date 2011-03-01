@@ -5,6 +5,7 @@
 #include<stdlib.h>
 #include<math.h>
 #include"vec.h"
+#include"degree_of_freedom.h"
 using namespace std;
 
 
@@ -12,7 +13,7 @@ class CParticle{
 
 	public:
 	
-	CParticle(){
+	CParticle():translation(x,v,a), rotation(q,w,aq){
 		init();
 		}
 
@@ -83,31 +84,25 @@ class CParticle{
 		}
 
 	void predict(double dt){ // (Beeman's algorithm)
-		 x+=(v + (2.0*a/3.0 - a0/6.0)*dt)*dt; 
-		 q+=(w + (2.0*aq/3.0 - aq0/6.0)*dt)*dt; 
+		translation.predict(dt);
+		rotation.predict(dt);
 		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
-		tempDt=dt;
 		}
 
 	void update_temp_accel(){
-		atemp=f/m;
-		aqtemp=tq/Im;
+		translation.update_temp_accel(f/m);
+		rotation.update_temp_accel(tq/Im);
 		}
 
 	void update_accel(){
-		a0=a;
-		aq0=aq;
-		a=atemp;
-		aq=aqtemp;
+		translation.update_accel();
+		rotation.update_accel();
 		}
 
 
 	void correct(){
-		static double dtt;
-		double dt=tempDt;
-		dtt=6.*dt*dt;
-		v+=(atemp/3+5*a/6-a0/6)*dt;
-		w +=(aqtemp/3+5*aq/6-aq0/6)*dt;
+		translation.correct();
+		rotation.correct();
 		}
 
 	void print(ostream &out=cout)const{
@@ -131,6 +126,8 @@ class CParticle{
 	vec2d xtemp;
 	vec2d a0,  atemp;
 	double aqtemp, aq0;
+	DFreedom<vec2d> translation;//translational
+	DFreedom<double> rotation;//rotational
 	};
 
 void CParticle::init() {
