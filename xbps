@@ -130,26 +130,51 @@ setfont
     print "%%Page: ", $page_counter,"\n";
     print "mypageinit\n";
    } else {
-    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; # xball format 2d
-    $x=$xoffset+$scale*$1;
-    $y=$yoffset+$scale*$2;
-    $r=$scale*$3;
-    $angle=$4;
-    $x2=$x+$r*cos($angle);
-    $y2=$y+$r*sin($angle);
-    $w=.8*$5/$colorscale;
-     
-     if($w>0){
-        printf("gsave %f %f %f setrgbcolor fill \n", .8-$w, .8-$w, .8);
+    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
+
+    $skipline=0;
+    if($1 eq "lines"){
+    		$readcircles=0;
+		$readlines=1;
+		$skipline=1;
+    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
+		}
+    elsif($1 eq "circles"){
+    		$readlines=0;
+		$readcircles=1;
+		$skipline=1;
+    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
+		}
+    if($skipline==0 and $readlines==1){
+	    $x=$xoffset+$scale*$1;
+	    $y=$yoffset+$scale*$2;
+	    $x2=$xoffset+$scale*$3;
+	    $y2=$yoffset+$scale*$4;
+	     printf("newpath %f %f moveto\n", $x, $y);
+	     printf("%f %f lineto stroke\n", $x2, $y2);
+	    $particle_counter--;
 	}
-    else{
-        printf("gsave %f %f %f setrgbcolor fill \n", .8, .8+$w, .8+$w);
+    if($skipline==0 and $readcircles==1){
+	    $x=$xoffset+$scale*$1;
+	    $y=$yoffset+$scale*$2;
+	    $r=$scale*$3;
+	    $angle=$4;
+	    $x2=$x+$r*cos($angle);
+	    $y2=$y+$r*sin($angle);
+	    $w=.8*$5/$colorscale;
+	     
+	     if($w>0){
+		printf("gsave %f %f %f setrgbcolor fill \n", .8-$w, .8-$w, .8);
+		}
+	    else{
+		printf("gsave %f %f %f setrgbcolor fill \n", .8, .8+$w, .8+$w);
+		}
+	     printf("%f %f %f fcir\n", $x, $y, $r);
+	     print "grestore ";
+	     printf("newpath %f %f moveto\n", $x, $y);
+	     printf("%f %f lineto stroke\n", $x2, $y2);
+	    $particle_counter--;
 	}
-     printf("%f %f %f fcir\n", $x, $y, $r);
-     print "grestore ";
-     printf("newpath %f %f moveto\n", $x, $y);
-     printf("%f %f lineto stroke\n", $x2, $y2);
-    $particle_counter--;
    }
   }
   print "showpage quit\n";

@@ -95,7 +95,6 @@ class CParticle: public CObject{
 
 	double density;
 	double r;
-	double tempDt;
 	};
 
 void CParticle::init() {

@@ -65,15 +65,17 @@ class CLine : public CObject
 	//has eq: n.(X-X0)=0;
 	{
 	public:
-	CLine(const vec2d &_x, const vec2d &_n):n(_n){
+	CLine(const vec2d &_x, const vec2d &_n, bool _moving=false):n(_n), moving(_moving){
 		x=_x;
 		n.normalize();
+		t(0)=n(1);
+		t(1)=-n(0);
+		m=1;//mass
 		}
 	double distance(const vec2d &_x){
 		return (_x-x)*n;
 		}
 	void interact(CParticle &p){
-		vec2d t(n(1),-n(0));
 		double d=distance(p.x);
 		double r=p.get_r();
 		double ovl=d - r;	
@@ -90,9 +92,16 @@ class CLine : public CObject
 		p.f+=df;
 		if(!p.rotation_fixed) p.tq+=ft*r;
 
+		//force on wall
+		f-=fn*n;//normal force
 		}
 
-	vec2d n;
+	void print(ostream &out=cout)const{
+		out<< x-100*t <<"\t"<< x+100*t <<endl;
+		}
+
+	vec2d n, t;
+	bool moving;
  	private:
 	};
 
@@ -118,8 +127,8 @@ class CWall
 		segments.push_back(seg);
 		}
 
-	void add_line(const vec2d &_x,const vec2d &_n){
-		lines.push_back(new CLine(_x,_n));
+	void add_line(const vec2d &_x,const vec2d &_n, bool moving=false){
+		lines.push_back(new CLine(_x,_n, moving));
 		}
 
 	void interact(CParticle &p){
@@ -128,6 +137,27 @@ class CWall
 			}
 		for(int i=0; i<lines.size(); i++){
 			lines.at(i)->interact(p);
+			}
+		}
+	void print(ostream &out=cout)const{
+		for(int i=0; i<lines.size(); i++){
+			lines.at(i)->print(out);
+			}
+		}
+	void predict(double dt){
+		for(int i=0; i<lines.size(); i++){
+			//if(lines.at(i)->moving)lines.at(i)->f=vec2d(0,-10);
+			if(lines.at(i)->moving)lines.at(i)->predict(dt);
+			}
+		}
+	void update_accel(){
+		for(int i=0; i<lines.size(); i++){
+			if(lines.at(i)->moving)lines.at(i)->update_accel();
+			}
+		}
+	void correct(){
+		for(int i=0; i<lines.size(); i++){
+			if(lines.at(i)->moving)lines.at(i)->correct();
 			}
 		}
 

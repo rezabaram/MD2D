@@ -49,6 +49,7 @@ void cal_forces(CParticle p[]){
 
 	
 	for(int i=0; i<N; i++){
+		//wall.lines.at(0)->f=G*wall.lines.at(0)->m;
 		p[i].f=G*p[i].m;
 		p[i].tq=0;
 
@@ -86,6 +87,9 @@ void output(CParticle *p){
                         //walls.print(out);
                         //gout=&out;
 		out<<"100000 0 0 0 0 0 0"<<endl;
+		out<<"lines"<<endl;
+		wall.print(out);
+		out<<"circles"<<endl;
 		for(int i=0; i<N; i++){
 			p[i].print(out);
                         }
@@ -110,7 +114,7 @@ void Initialize(){
 	wall.add_line(O,ux);
 	wall.add_line(O,uy);
 	wall.add_line(ux+uy,-ux);
-	wall.add_line(ux+uy,-uy);
+	wall.add_line(ux+uy,-uy, true);
 
 	double r=0.03;
 	double r_var=0.5;
@@ -153,7 +157,7 @@ void Run(){
 		
 		cal_forces(p);
 
-		//wall.update.
+		//wall.update_accel();
 		for(int i=0; i<N; i++){
 			p[i].update_accel();
 		}
