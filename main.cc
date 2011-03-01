@@ -155,7 +155,7 @@ void Run(){
 
 			//wall.update ...(dt);
 		for(int i=0; i<N; i++){
-			p[i].update_temp_accel();
+			p[i].update_accel();
 		}
 
 		//wall.correct();
@@ -163,10 +163,6 @@ void Run(){
 			p[i].correct();
 			}
 
-		//wall.update...
-		for(int i=0; i<N; i++){
-			p[i].update_accel();
-		}
 		t+=dt;
 		output(p);
 		}

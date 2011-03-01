@@ -89,16 +89,10 @@ class CParticle{
 		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
 		}
 
-	void update_temp_accel(){
-		translation.update_temp_accel(f/m);
-		rotation.update_temp_accel(tq/Im);
-		}
-
 	void update_accel(){
-		translation.update_accel();
-		rotation.update_accel();
+		translation.update_accel(f/m);
+		rotation.update_accel(tq/Im);
 		}
-
 
 	void correct(){
 		translation.correct();

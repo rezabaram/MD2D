@@ -14,19 +14,16 @@ class DFreedom
 		tempDt=dt;
 		}
 
-	void update_temp_accel(const T & _a){
+	void update_accel(const T & _a){
 		atemp=_a;
-		}
-
-	void update_accel(){
-		a0=a;
-		a=atemp;
 		}
 
 	void correct(){
 		double dt=tempDt;
 		double dtt=6.*dt*dt;
 		v+=(atemp/3+5*a/6-a0/6)*dt;
+		a0=a;
+		a=atemp;
 		}
  	private:
 	T &x, &v, &a;
