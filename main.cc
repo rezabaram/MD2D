@@ -8,7 +8,7 @@
 #include"celllist.h"
 
 
-bool cell_list_on=true;
+bool cell_list_on=false;
 //origin
 const vec2d O(0,0);
 //unit vectors
@@ -49,8 +49,8 @@ void cal_forces(CParticle p[]){
 
 	
 	for(int i=0; i<N; i++){
-		//wall.lines.at(0)->f=G*wall.lines.at(0)->m;
-		p[i].f=G*p[i].m;
+		wall.set_g(G);
+		p[i].f=0;
 		p[i].tq=0;
 
 		wall.interact(p[i]);
@@ -150,19 +150,19 @@ void Run(){
 	output(p);
 	while (t<maxtime){
 
-		//wall.predict(dt);
+		wall.predict(dt);
 		for(int i=0; i<N; i++){
 			p[i].predict(dt);
 			}
 		
 		cal_forces(p);
 
-		//wall.update_accel();
+		wall.update_accel();
 		for(int i=0; i<N; i++){
 			p[i].update_accel();
 		}
 
-		//wall.correct();
+		wall.correct();
 		for(int i=0; i<N; i++){
 			p[i].correct();
 			}

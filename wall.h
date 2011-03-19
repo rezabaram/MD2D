@@ -70,7 +70,7 @@ class CLine : public CObject
 		n.normalize();
 		t(0)=n(1);
 		t(1)=-n(0);
-		m=1;//mass
+		m=.01;//mass
 		}
 	double distance(const vec2d &_x){
 		return (_x-x)*n;
@@ -144,6 +144,7 @@ class CWall
 			lines.at(i)->print(out);
 			}
 		}
+
 	void predict(double dt){
 		for(int i=0; i<lines.size(); i++){
 			//if(lines.at(i)->moving)lines.at(i)->f=vec2d(0,-10);
@@ -165,6 +166,11 @@ class CWall
 		
 		}
 	
+	void set_g(const vec2d &g){
+		for(int i=0; i<lines.size(); i++){
+			if(lines.at(i)->moving)lines.at(i)->f=lines.at(i)->m*g;
+			}
+		}
  	private:
 	vector<CLineSegment*> segments;
 	vector<CLine*> lines;
