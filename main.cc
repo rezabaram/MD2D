@@ -6,33 +6,53 @@
 #include"MersenneTwister.h"
 #include"wall.h"
 #include"celllist.h"
+using namespace std;
+
+long RNGSeed;
+extern MTRand rgen;
 
 
-bool cell_list_on=false;
+/* Defining basic vectors ----------------------*/
 //origin
 const vec2d O(0,0);
 //unit vectors
 const vec2d ux(1,0);
 const vec2d uy(0,1);
 
+
+/* Grid ----------------------------------------*/
+bool cell_list_on=true;
+bool print_grid_on=true and cell_list_on;
 CCellList grid;
+double Lx=0.7;
+double Ly=1;
+bool periodic_x=true;
+bool periodic_y=false;
 
-using namespace std;
 
-long RNGSeed;
-extern MTRand rgen;
-
-double t=0;
-double maxtime=5;
-double dt=0.0001;
-double outDt=0.01;
-vec2d G(0,-10);
-
-size_t N;
-
-ofstream logtime("logtime");
-
+/* Wall --------------------------------------- */
 CWall wall;
+bool is_wall_moving=true;
+//initial velocity of the wall
+//this is used mainly to give a tangential velocity
+vec2d v0_wall=1*ux;
+double v_max_wall=.2;
+double wall_pressure=.1;
+
+
+/* Simulation ---------------------------------*/
+CParticle *p;
+double t=0;
+double maxtime=50;
+double outDt=0.1;
+vec2d G(0,0);
+size_t N;
+double r=0.008;
+double r_var=0.1;
+ofstream logtime("logtime");
+double dt=0.005*r;
+double v0=5*r;
+
 
 double cal_energy(CParticle *p){
 
@@ -49,8 +69,8 @@ void cal_forces(CParticle p[]){
 
 	
 	for(int i=0; i<N; i++){
-		wall.set_g(G);
-		p[i].f=0;
+		wall.set_force(-wall_pressure*Ly*uy);
+		p[i].f=p[i].m*G;
 		p[i].tq=0;
 
 		wall.interact(p[i]);
@@ -86,9 +106,10 @@ void output(CParticle *p){
                         out.open(outstream.str().c_str());
                         //walls.print(out);
                         //gout=&out;
-		out<<"100000 0 0 0 0 0 0"<<endl;
+		out<<"10000000 0 0 0 0 0 0"<<endl;
 		out<<"lines"<<endl;
 		wall.print(out);
+		if(print_grid_on)grid.print(out);
 		out<<"circles"<<endl;
 		for(int i=0; i<N; i++){
 			p[i].print(out);
@@ -102,30 +123,38 @@ void output(CParticle *p){
 
 	}
 
-CParticle *p;
 void Initialize(){
-/*
-	wall.add_segment(0,0,L,0);
-	wall.add_segment(0,0,0,L);
-	wall.add_segment(L,0,L,L);
-	wall.add_segment(0,L,L,L);
-*/
 
-	wall.add_line(O,ux);
-	wall.add_line(O,uy);
-	wall.add_line(ux+uy,-ux);
-	wall.add_line(ux+uy,-uy, true);
+/* Boundary set up -------------------------------*/
+	if(periodic_x and periodic_y){
+		wall.add_shadow_line(O,ux);
+		wall.add_shadow_line(O,uy);
+		wall.add_shadow_line(Lx*ux+Ly*uy,-ux);
+		wall.add_shadow_line(Lx*ux+Ly*uy,-uy);
+		}
+	else if(periodic_x and !periodic_y){
+		wall.add_shadow_line(O,ux);
+		wall.add_shadow_line(Lx*ux+Ly*uy,-ux);
+		wall.add_line(O,uy);
+		//defining a moving wall
+		wall.add_line(Lx*ux+Ly*uy,-uy, is_wall_moving, v0_wall, v_max_wall);
+		}
+	else if(!periodic_x and !periodic_y){
+		wall.add_line(O,ux);
+		wall.add_line(Lx*ux+Ly*uy,-ux);
+		wall.add_line(O,uy);
+		//defining a moving wall
+		wall.add_line(Lx*ux+Ly*uy,-uy, is_wall_moving, v0_wall, v_max_wall);
+		}
+	else{
+		ERROR(1,"The boundary configuration not implemented.");
+		}
+/* ------------------------------------------------*/
 
-	double r=0.03;
-	double r_var=0.5;
-	grid.setup(O, ux+uy, 2.5*r*(1+0.5*r_var));
+	grid.setup(O, Lx*ux+Ly*uy, 2.1*r*(1+0.5*r_var));
 	N=grid.nx*grid.ny;
 	p=new CParticle[N];
 	cerr<< "Number of Paeticles: "<<N <<endl;
-	dt=0.005*r;
-
-	//INIT
-	double v0=5*r;
 	 for(size_t i=0;i<grid.nx;i++){
 	  for(size_t j=0;j<grid.ny;j++){
 

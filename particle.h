@@ -52,13 +52,13 @@ class CParticle: public CObject{
 		double d=sqrt(d2);
 		double ovl= fabs(d - (r+p.r));
 
-   		double fn=kn*pow(ovl,1.5);
-
-		ERROR(d==0,"Interacting particles either identical or have identical centers.");
 		vec2d n=(x-p.x)/d;
 		vec2d t(n(1), -n(0));
-
 		vec2d vr = v-p.v + r*(w + p.w)*t;
+
+   		double fn=kn*pow(ovl,1.5)-kd*(vr*n)*sqrt(ovl);
+
+		ERROR(d==0,"Interacting particles either identical or have identical centers.");
 
 		double vr_t = vr*t;
 		
@@ -87,7 +87,7 @@ class CParticle: public CObject{
 		out<< x <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
 		}
 
-	double kn,mu,vt;
+	double kn, kd,mu,vt;
 	double vtr; //velocidade de transição
 
 	bool rotation_fixed;
@@ -99,7 +99,7 @@ class CParticle: public CObject{
 
 void CParticle::init() {
 	rotation_fixed=false;
-	kn=1e+6; mu=0.8;
+	kn=1e+4; kd=30; mu=0.8;
 	r=1;
 	vt=2.0;
 	density=1;

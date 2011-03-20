@@ -310,6 +310,12 @@ class Vec{
 		return Vec<3, T, policy> (policy::mul(u(1),v(2))-policy::mul(u(2),v(1)),policy::mul(u(2),v(0))-policy::mul(u(0),v(2)),policy::mul(u(0),v(1))-policy::mul(u(1),v(0)));
 	}
 
+template<indexType _dim, class T, class policy>
+inline
+double fabs(const Vec<_dim, T, policy> &v){
+	return v.abs();
+	}
+
 typedef Vec<2,double> vec2d;
 typedef Vec<2,int> ivec2d;
 typedef Vec<3,double> vec;

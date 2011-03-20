@@ -58,6 +58,10 @@ class CLineSegment{
 		if(!p.rotation_fixed) p.tq+=ft*r;
 		}
 
+	void print(ostream &out=cout)const{
+		out<< x1 <<"\t"<< x2 <<endl;
+		}
+
 	vec2d x1, x2;
 	};
 
@@ -65,24 +69,39 @@ class CLine : public CObject
 	//has eq: n.(X-X0)=0;
 	{
 	public:
-	CLine(const vec2d &_x, const vec2d &_n, bool _moving=false):n(_n), moving(_moving){
+	CLine(const vec2d &_x, const vec2d &_n, bool _moving, const vec2d &_v0, double maxv=1e+10):n(_n), moving(_moving){
 		x=_x;
+		v=_v0;
 		n.normalize();
 		t(0)=n(1);
 		t(1)=-n(0);
 		m=.01;//mass
+		v_max=maxv;
 		}
+	void check_max(){
+		//imposing a maximum on the normal 
+		//component of the velocity
+		double d=fabs(v*n);
+		if(d>v_max){
+			vec2d vn=n*(v*n);
+			v-=vn;
+			vn*=v_max/d;
+			v+=vn;
+			}
+		}
+
 	double distance(const vec2d &_x){
 		return (_x-x)*n;
 		}
-	void interact(CParticle &p){
+	virtual void interact(CParticle &p){
 		double d=distance(p.x);
 		double r=p.get_r();
 		double ovl=d - r;	
 		if(sgn(ovl)>0)return;
-   		double fn=p.kn*pow(fabs(ovl),1.5);
    		
-		vec2d vr = p.v + r*p.w*t;
+		vec2d vr = p.v + r*p.w*t - v;
+   		//double fn=p.kn*pow(fabs(ovl),1.5);
+   		double fn=p.kn*pow(fabs(ovl),1.5);//+p.kd*(vr*n)*sqrt(ovl);
 
 		double vr_t = vr*t;
 
@@ -103,6 +122,16 @@ class CLine : public CObject
 	vec2d n, t;
 	bool moving;
  	private:
+	};
+
+
+class CShadowLine: public CLine{
+	public:
+	CShadowLine(const vec2d &_x, const vec2d &_n):CLine(_x, _n, false, vec2d(0,0)){};
+	void interact(CParticle &p){
+		return;
+		}
+	
 	};
 
 class CWall
@@ -127,8 +156,11 @@ class CWall
 		segments.push_back(seg);
 		}
 
-	void add_line(const vec2d &_x,const vec2d &_n, bool moving=false){
-		lines.push_back(new CLine(_x,_n, moving));
+	void add_shadow_line(const vec2d &_x,const vec2d &_n){
+		lines.push_back(new CShadowLine(_x,_n));
+		}
+	void add_line(const vec2d &_x,const vec2d &_n, bool moving=false, const vec2d &_v0=vec2d(0,0), double v_max=1e+14){
+		lines.push_back(new CLine(_x,_n, moving, _v0, v_max));
 		}
 
 	void interact(CParticle &p){
@@ -166,9 +198,9 @@ class CWall
 		
 		}
 	
-	void set_g(const vec2d &g){
+	void set_force(const vec2d &g){
 		for(int i=0; i<lines.size(); i++){
-			if(lines.at(i)->moving)lines.at(i)->f=lines.at(i)->m*g;
+			if(lines.at(i)->moving)lines.at(i)->f=g;
 			}
 		}
  	private:
