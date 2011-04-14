@@ -24,12 +24,10 @@ class CObject
 		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
 		}
 
-	void update_accel(){
-		translation.update_accel(f/m);
-		rotation.update_accel(tq/Im);
-		}
 
 	void correct(){
+		translation.update_accel(f/m);
+		rotation.update_accel(tq/Im);
 		translation.correct();
 		rotation.correct();
 		check_max();

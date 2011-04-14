@@ -2,7 +2,7 @@
 $xoffset=10;
 $yoffset=10;
 $scale=10;
-$colorscale=20;
+$colorscale=2;
 $linewidth=0.005;
 $auto_xoffset=0;
 $auto_yoffset=0;
@@ -161,7 +161,7 @@ setfont
 	    $angle=$4;
 	    $x2=$x+$r*cos($angle);
 	    $y2=$y+$r*sin($angle);
-	    $w=.8*$5/$colorscale;
+	    $w=0.8*$5*$r/$colorscale;
 	     
 	     if($w>0){
 		printf("gsave %f %f %f setrgbcolor fill \n", .8-$w, .8-$w, .8);

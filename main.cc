@@ -24,8 +24,8 @@ const vec2d uy(0,1);
 bool cell_list_on=true;
 bool print_grid_on=true and cell_list_on;
 CCellList grid;
-double Lx=0.7;
-double Ly=1;
+double Lx=1.0;
+double Ly=2;
 bool periodic_x=true;
 bool periodic_y=false;
 
@@ -35,9 +35,10 @@ CWall wall;
 bool is_wall_moving=true;
 //initial velocity of the wall
 //this is used mainly to give a tangential velocity
-vec2d v0_wall=1*ux;
-double v_max_wall=.2;
-double wall_pressure=.1;
+vec2d v0_wall=2*ux;
+double v_max_wall=0.2;
+double wall_pressure=1.7;
+double shear=0.0;
 
 
 /* Simulation ---------------------------------*/
@@ -47,12 +48,18 @@ double maxtime=50;
 double outDt=0.1;
 vec2d G(0,0);
 size_t N;
-double r=0.008;
-double r_var=0.1;
+double r=0.02;
+double r_var=1.0;
+double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.005*r;
 double v0=5*r;
 
+double power_law(double x0, double x1, double n){
+	double y=drand48();
+	return pow((pow(x1,(n+1)) - pow(x0,(n+1)))*y + pow(x0,(n+1)), (1/(n+1.)) );
+
+	}
 
 double cal_energy(CParticle *p){
 
@@ -68,8 +75,9 @@ double cal_energy(CParticle *p){
 void cal_forces(CParticle p[]){
 
 	
+	wall.set_pressure(wall_pressure, shear);
 	for(int i=0; i<N; i++){
-		wall.set_force(-wall_pressure*Ly*uy);
+		//wall.set_force(-wall_pressure*Ly*uy);
 		p[i].f=p[i].m*G;
 		p[i].tq=0;
 
@@ -135,9 +143,12 @@ void Initialize(){
 	else if(periodic_x and !periodic_y){
 		wall.add_shadow_line(O,ux);
 		wall.add_shadow_line(Lx*ux+Ly*uy,-ux);
-		wall.add_line(O,uy);
+		//wall.add_line(O,uy);
 		//defining a moving wall
 		wall.add_line(Lx*ux+Ly*uy,-uy, is_wall_moving, v0_wall, v_max_wall);
+		//wall.add_line(Lx*ux+Ly*uy,-uy);
+		wall.add_line(O,uy, is_wall_moving, -v0_wall, v_max_wall);
+		//wall.add_line(O,uy);
 		}
 	else if(!periodic_x and !periodic_y){
 		wall.add_line(O,ux);
@@ -158,7 +169,9 @@ void Initialize(){
 	 for(size_t i=0;i<grid.nx;i++){
 	  for(size_t j=0;j<grid.ny;j++){
 
-	   p[i*grid.ny+j].set_r(r*(1+r_var*(0.5-drand48())));
+	   //double radius=r*(1+r_var*(0.5-drand48()));
+	   double radius=power_law(r*(1-0.5*r_var), r*(1+0.5*r_var), -exponent);
+	   p[i*grid.ny+j].set_r(radius);
 	   p[i*grid.ny+j].set_pos(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
 
 	  double theta=(rand()%100001)*M_PI*2.0e-5;
@@ -185,11 +198,6 @@ void Run(){
 			}
 		
 		cal_forces(p);
-
-		wall.update_accel();
-		for(int i=0; i<N; i++){
-			p[i].update_accel();
-		}
 
 		wall.correct();
 		for(int i=0; i<N; i++){

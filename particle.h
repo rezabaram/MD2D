@@ -99,7 +99,7 @@ class CParticle: public CObject{
 
 void CParticle::init() {
 	rotation_fixed=false;
-	kn=1e+4; kd=30; mu=0.8;
+	kn=1e+5; kd=30; mu=0.8;
 	r=1;
 	vt=2.0;
 	density=1;

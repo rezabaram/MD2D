@@ -75,9 +75,18 @@ class CLine : public CObject
 		n.normalize();
 		t(0)=n(1);
 		t(1)=-n(0);
-		m=.01;//mass
+		m=.1;//mass
 		v_max=maxv;
 		}
+	void set_const_force(const vec2d &_f){
+		const_f=_f;
+		f=_f;
+		}
+
+	void reset_const_force(){
+		f=const_f;
+		}
+
 	void check_max(){
 		//imposing a maximum on the normal 
 		//component of the velocity
@@ -113,6 +122,7 @@ class CLine : public CObject
 
 		//force on wall
 		f-=fn*n;//normal force
+		//f-=df;
 		}
 
 	void print(ostream &out=cout)const{
@@ -120,6 +130,7 @@ class CLine : public CObject
 		}
 
 	vec2d n, t;
+	vec2d const_f;
 	bool moving;
  	private:
 	};
@@ -180,12 +191,12 @@ class CWall
 	void predict(double dt){
 		for(int i=0; i<lines.size(); i++){
 			//if(lines.at(i)->moving)lines.at(i)->f=vec2d(0,-10);
-			if(lines.at(i)->moving)lines.at(i)->predict(dt);
-			}
-		}
-	void update_accel(){
-		for(int i=0; i<lines.size(); i++){
-			if(lines.at(i)->moving)lines.at(i)->update_accel();
+			CLine &line=*lines.at(i);
+			if(line.moving){
+				line.predict(dt);
+				//if(line.x(1)>1)line.x(1)=.9999;
+				//if(line.x(1)<0)line.x(1)=0;
+				}
 			}
 		}
 	void correct(){
@@ -198,6 +209,13 @@ class CWall
 		
 		}
 	
+	void set_pressure(double p, double shear){
+		for(int i=0; i<lines.size(); i++){
+			//if(lines.at(i)->moving)cerr<<  lines.at(i)->f<<endl;
+			if(lines.at(i)->moving)lines.at(i)->f=vec2d(p*lines.at(i)->n- shear*lines.at(i)->t);
+			}
+		}
+
 	void set_force(const vec2d &g){
 		for(int i=0; i<lines.size(); i++){
 			if(lines.at(i)->moving)lines.at(i)->f=g;
