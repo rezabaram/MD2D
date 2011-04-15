@@ -2,11 +2,14 @@
 #include<fstream>
 #include<sstream>
 #include<iomanip>
+#include <boost/thread/thread.hpp>
+#include <cctype>
 #include"particle.h"
 #include"MersenneTwister.h"
 #include"wall.h"
 #include"celllist.h"
 using namespace std;
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
 long RNGSeed;
 extern MTRand rgen;
@@ -212,8 +215,52 @@ void Shutdown(){
 	delete [] p;
 	}
 
+bool isNumeric( const char* pszInput, int nNumberBase=10 )
+{
+	istringstream iss( pszInput );
+ 
+	if ( nNumberBase == 10 )
+	{
+		double dTestSink;
+		iss >> dTestSink;
+	}
+	else if ( nNumberBase == 8 || nNumberBase == 16 )
+	{
+		int nTestSink;
+		iss >> ( ( nNumberBase == 8 ) ? oct : hex ) >> nTestSink;
+	}
+	else
+		return false;
+ 
+	// was any input successfully consumed/converted?
+	if ( ! iss )
+		return false;
+ 
+	// was all the input successfully consumed/converted?
+	return ( iss.rdbuf()->in_avail() == 0 );
+}
 
+void set_wall_pressure(double p){
+	pthread_mutex_lock( &mutex1 );
+	wall_pressure=p;
+	pthread_mutex_unlock( &mutex1 );
+	}
 
+void interface(){
+	string input;
+	while(1){
+		cerr<< "Enter wall pressure: " ;
+		cin>>input;
+		
+		if(! isNumeric(input.c_str()) ){
+			cerr<< "Input not a number. Try again." <<endl;
+			continue;
+			}
+		
+		set_wall_pressure(atof(input.c_str()));
+		}
+	
+	}
 
 
 int main(int pi, char **params){
@@ -228,7 +275,10 @@ int main(int pi, char **params){
 	Initialize();
 
 
-	Run();
+        boost::thread main_thread(Run), interface_thread(interface);
+
+	main_thread.join();
+	interface_thread.join();
 
 	Shutdown();
 	exit(0);

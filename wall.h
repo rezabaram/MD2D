@@ -70,37 +70,38 @@ class CLine : public CObject<2>
 	{
 	public:
 	CLine(const vec2d &_x, const vec2d &_n, bool _moving, const vec2d &_v0, double maxv=1e+10):n(_n), moving(_moving){
-		x=_x;
-		v=_v0;
+		set_x(_x);
+		set_v(_v0);
 		n.normalize();
 		t(0)=n(1);
 		t(1)=-n(0);
 		m=.1;//mass
-		v_max=maxv;
+		set_v_max(maxv);
 		}
 	void set_const_force(const vec2d &_f){
 		const_f=_f;
-		f=_f;
+		set_f(_f);
 		}
 
 	void reset_const_force(){
-		f=const_f;
+		set_f(const_f);
 		}
 
 	void check_max(){
 		//imposing a maximum on the normal 
 		//component of the velocity
-		double d=fabs(v*n);
-		if(d>v_max){
-			vec2d vn=n*(v*n);
-			v-=vn;
-			vn*=v_max/d;
-			v+=vn;
+		vec2d _v=get_v();
+		double d=fabs(_v*n);
+		if(d>get_v_max()){
+			vec2d vn=n*(_v*n);
+			_v-=vn;
+			vn*=get_v_max()/d;
+			set_v(_v+vn);
 			}
 		}
 
 	double distance(const vec2d &_x){
-		return (_x-x)*n;
+		return (_x-get_x())*n;
 		}
 	virtual void interact(CParticle &p){
 		double d=distance(p.get_x());
@@ -108,7 +109,7 @@ class CLine : public CObject<2>
 		double ovl=d - r;	
 		if(sgn(ovl)>0)return;
    		
-		vec2d vr = p.get_v() + r*p.get_w()*t - v;
+		vec2d vr = p.get_v() + r*p.get_w()*t - get_v();
    		//double fn=p.kn*pow(fabs(ovl),1.5);
    		double fn=p.kn*pow(fabs(ovl),1.5);//+p.kd*(vr*n)*sqrt(ovl);
 
@@ -121,12 +122,12 @@ class CLine : public CObject<2>
 		if(!p.rotation_fixed) p.add_tq(ft*r);
 
 		//force on =wall
-		f-=fn*n;//normal force
+		add_f(-fn*n);//normal force
 		//f-=df;
 		}
 
 	void print(ostream &out=cout)const{
-		out<< x-100*t <<"\t"<< x+100*t <<endl;
+		out<< get_x()-100*t <<"\t"<< get_x()+100*t <<endl;
 		}
 
 	vec2d n, t;

@@ -36,7 +36,7 @@ class CParticle: public CObject<2>{
 		}
 */
 	double dist2(const CParticle &p)const{
-		return (x-p.get_x()).abs2();
+		return (get_x()-p.get_x()).abs2();
 		}
 	void interact(CParticle &p){
 	TRY
@@ -47,9 +47,9 @@ class CParticle: public CObject<2>{
 		double d=sqrt(d2);
 		double ovl= fabs(d - (r+p.r));
 
-		vec2d n=(x-p.get_x())/d;
+		vec2d n=(get_x()-p.get_x())/d;
 		vec2d t(n(1), -n(0));
-		vec2d vr = v-p.v + r*(w + p.w)*t;
+		vec2d vr = get_v()-p.get_v() + r*(get_w() + p.get_w())*t;
 
    		double fn=kn*pow(ovl,1.5)-kd*(vr*n)*sqrt(ovl);
 
@@ -61,25 +61,25 @@ class CParticle: public CObject<2>{
 		double ft=(-mu*fn*vr_t/10.);
 
 		vec2d df= fn*n + ft*t;
-		f+=df;
-		if(!rotation_fixed) tq+=ft*r;
+		add_f(df);
+		if(!rotation_fixed) add_tq(ft*r);
       
-		p.f-=df;
-		if(!p.rotation_fixed) p.tq+=(ft*p.r);
+		p.add_f(-df);
+		if(!p.rotation_fixed) p.add_tq(ft*p.r);
 	CATCH
 		}
 	void fix_rotation(double w0){
-		w=w0;
+		set_w(w0);
 		rotation_fixed=true;
 		}
 
 	double energy(){
-		return 0.5*m*v.abs2();
+		return 0.5*m*get_v().abs2();
 		}
 
 
 	void print(ostream &out=cout)const{
-		out<< x <<"\t"<< r <<"\t"<<q<<"\t"<<w<<endl;
+		out<< get_x() <<"\t"<< r <<"\t"<<get_q()<<"\t"<<get_w()<<endl;
 		}
 
 	double kn, kd,mu,vt;

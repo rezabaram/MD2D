@@ -3,7 +3,7 @@ run: a.out
 	./a.out > energy
 
 a.out: main.cc *.h
-	g++  -O2 main.cc 
+	g++  -O2 main.cc -lboost_thread
 
 frames:
 	sh genframe.sh out?????

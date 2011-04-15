@@ -2,6 +2,7 @@
 #define OBJECT_H 
 #include"vec.h"
 #include"dfreedom.h"
+#include <boost/thread/thread.hpp>
 
 //This is the class from which any moving 
 //object is derived. (Putting together the 
@@ -76,6 +77,9 @@ class CObject
 	xType get_v()const{
 		return v;
 		}
+	double get_v_max()const{
+		return v_max;
+		}
 
 	xType get_f()const{
 		return f;
@@ -87,6 +91,9 @@ class CObject
 
 	void set_v(const xType &_v){
 		v=_v; 
+		}
+	void set_v_max(double vmax){
+		v_max=vmax; 
 		}
 
 	void set_f(const xType &_f){
@@ -104,12 +111,12 @@ class CObject
 
 	double m, Im;
 	protected:
-	xType x,v,a, f;
-	xType xtemp;
-	double q,w,aq, tq;
+ 	private:
 	DFreedom<xType> translation;
 	DFreedom<double> rotation;
+	double q,w,aq, tq;
+	xType x,v,a, f;
 	double v_max;
- 	private:
+	xType xtemp;
 	};
 #endif /* OBJECT_H */
