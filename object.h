@@ -7,8 +7,26 @@
 //object is derived. (Putting together the 
 //common part, not to repeat it for every object.)
 
-class CObject
+
+
+//The template and trait stuffs are just for future in case we want 
+//to extend this to 3d as smooth as possible
+
+template<int Dim>
+class DimensionTrait{
+	};
+template<>
+class DimensionTrait<2>{
+	public:
+	typedef vec2d TranslationVariablesType;
+	typedef double RotationVariablesType;
+	};
+
+template<int Dim=2, class DimTrait=DimensionTrait<Dim> >
+class CObject 
 	{
+	typedef typename DimTrait::TranslationVariablesType xType;
+	typedef typename DimTrait::RotationVariablesType wType;
 	public:
 	CObject():translation(x,v,a), rotation(q, w, aq){
 		x=0; v=0; a=0;
@@ -34,13 +52,62 @@ class CObject
 		}
 	virtual void check_max(){
 		}
+	virtual void shift(const xType &_x){
+		x+=_x;
+		}
 
-	vec2d x,v,a, f;
-	vec2d xtemp;
-	double q,w,aq, tq;
+	wType get_w()const{
+		return w;
+		}
+	wType get_q()const{
+		return q;
+		}
+	void set_w(const wType _w){
+		w=_w;
+		}
+	void set_q(const wType _q){
+		q=_q;
+		}
+
+	xType get_x()const{
+		return x;
+		}
+
+	xType get_v()const{
+		return v;
+		}
+
+	xType get_f()const{
+		return f;
+		}
+
+	void set_x(const xType &_x){
+		x=_x; 
+		}
+
+	void set_v(const xType &_v){
+		v=_v; 
+		}
+
+	void set_f(const xType &_f){
+		f=_f;
+		}
+	void set_tq(const wType _tq){
+		tq=_tq;
+		}
+	void add_f(const xType &_f){
+		f+=_f;
+		}
+	void add_tq(wType _tq){
+		tq+=_tq;
+		}
+
 	double m, Im;
 	protected:
-	DFreedom<vec2d> translation;
+	xType x,v,a, f;
+	xType xtemp;
+	double q,w,aq, tq;
+	DFreedom<xType> translation;
 	DFreedom<double> rotation;
 	double v_max;
  	private:

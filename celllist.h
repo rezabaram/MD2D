@@ -25,11 +25,11 @@ class CCell : public list<CParticle *>{
 			for(int k=1; k<5; k++){
 				//for neighbouring cells
 				if(neighs[k]==NULL)continue;
-				(*it1)->x+=shifts[k];
+				(*it1)->shift(shifts[k]);
 				for(it2=neighs[k]->begin(); it2!=neighs[k]->end(); it2++){
 					(*it1)->interact(**it2);
 					}
-				(*it1)->x-=shifts[k];
+				(*it1)->shift(-shifts[k]);
 				}
 			}
 		}
@@ -120,20 +120,20 @@ class CCellList
 			add(p[i]);
 			}
 		}
-	CCell *which(vec2d &x){
-		vec2d xp=x-c;
+	CCell *which(CParticle &particle){
+		vec2d xp=particle.get_x()-c;
 		int i=(int)(floor(xp(0)/dx));
 		int j=(int)(floor(xp(1)/dy));
-		if(!periodic_x) ERROR(i<0 or i>=nx, "Point out of grid: "+stringify(x)+stringify(i)+" " +stringify(j));
-		if(!periodic_y) ERROR(j<0 or j>=ny, "Point out of grid: "+stringify(x)+stringify(i)+" " +stringify(j));
+		if(!periodic_x) ERROR(i<0 or i>=nx, "Point out of grid: "+stringify(particle.get_x())+stringify(i)+" " +stringify(j));
+		if(!periodic_y) ERROR(j<0 or j>=ny, "Point out of grid: "+stringify(particle.get_x())+stringify(i)+" " +stringify(j));
 		vec2d shift(0,0);
 		CCell *p=boundary_mask(i,j, shift);
-		x+=shift;
+		particle.shift(shift);
 		return p;
 		}
 
 	void add(CParticle &p){
-		CCell *c=which(p.x);
+		CCell *c=which(p);
 		c->add(&p);
 		}
 	void interact(){

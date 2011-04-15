@@ -8,7 +8,7 @@
 using namespace std;
 
 
-class CParticle: public CObject{
+class CParticle: public CObject<2>{
 
 	public:
 	
@@ -29,13 +29,6 @@ class CParticle: public CObject{
 	double get_r(){
 		return r;
 		}
-	void set_pos(const vec2d &_x){
-		x=_x; 
-		}
-
-	void set_vel(const vec2d &_v){
-		v=_v; 
-		}
 
 
 /*	double dist(const CParticle &p)const{
@@ -43,16 +36,18 @@ class CParticle: public CObject{
 		}
 */
 	double dist2(const CParticle &p)const{
-		return (x-p.x).abs2();
+		return (x-p.get_x()).abs2();
 		}
 	void interact(CParticle &p){
 	TRY
+		//boost::mutex::scoped_lock lock1(this->freeze_mutex);
+		//boost::mutex::scoped_lock lock2(this->freeze_mutex);
 		double d2=dist2(p);
 		if( d2 > (r+p.r)*(r+p.r))return;
 		double d=sqrt(d2);
 		double ovl= fabs(d - (r+p.r));
 
-		vec2d n=(x-p.x)/d;
+		vec2d n=(x-p.get_x())/d;
 		vec2d t(n(1), -n(0));
 		vec2d vr = v-p.v + r*(w + p.w)*t;
 

@@ -19,7 +19,7 @@ class CLineSegment{
 		t*=1.0/wl;//normalize the vector t;
 
 		vec2d n(t(1),-t(0));
-		vec2d q=(p.x-x1);
+		vec2d q=(p.get_x()-x1);
 		int sg = 1;
 
 		double l=q*t;//inner product
@@ -33,7 +33,7 @@ class CLineSegment{
 		}else{
 
 			if(l>wl){
-				q=(p.x-x2); 
+				q=(p.get_x()-x2); 
 				d=q.abs();
 				if( d > r)return;
 				n=q/d; 
@@ -47,15 +47,15 @@ class CLineSegment{
 		double ovl=fabs(d - r);	//double vn=p.vy;
    		double fn=sg*p.kn*pow(ovl,1.5);
 
-		vec2d vr = p.v + r*p.w*t;
+		vec2d vr = p.get_v() + r*p.get_w()*t;
 
 		double vr_t = vr*t;
 
     	double ft=(fn>0)?(-p.mu*fn*vr_t/10.):(p.mu*fn*vr_t/10.);
 
 		vec2d df= fn*n + ft*t;
-		p.f+=df;
-		if(!p.rotation_fixed) p.tq+=ft*r;
+		p.add_f(df);
+		if(!p.rotation_fixed) p.add_tq(ft*r);
 		}
 
 	void print(ostream &out=cout)const{
@@ -65,7 +65,7 @@ class CLineSegment{
 	vec2d x1, x2;
 	};
 
-class CLine : public CObject
+class CLine : public CObject<2>
 	//has eq: n.(X-X0)=0;
 	{
 	public:
@@ -103,12 +103,12 @@ class CLine : public CObject
 		return (_x-x)*n;
 		}
 	virtual void interact(CParticle &p){
-		double d=distance(p.x);
+		double d=distance(p.get_x());
 		double r=p.get_r();
 		double ovl=d - r;	
 		if(sgn(ovl)>0)return;
    		
-		vec2d vr = p.v + r*p.w*t - v;
+		vec2d vr = p.get_v() + r*p.get_w()*t - v;
    		//double fn=p.kn*pow(fabs(ovl),1.5);
    		double fn=p.kn*pow(fabs(ovl),1.5);//+p.kd*(vr*n)*sqrt(ovl);
 
@@ -117,10 +117,10 @@ class CLine : public CObject
     		double ft=-p.mu*fn*vr_t/10.;
 
 		vec2d df= fn*n + ft*t;
-		p.f+=df;
-		if(!p.rotation_fixed) p.tq+=ft*r;
+		p.add_f(df);
+		if(!p.rotation_fixed) p.add_tq(ft*r);
 
-		//force on wall
+		//force on =wall
 		f-=fn*n;//normal force
 		//f-=df;
 		}
@@ -212,13 +212,13 @@ class CWall
 	void set_pressure(double p, double shear){
 		for(int i=0; i<lines.size(); i++){
 			//if(lines.at(i)->moving)cerr<<  lines.at(i)->f<<endl;
-			if(lines.at(i)->moving)lines.at(i)->f=vec2d(p*lines.at(i)->n- shear*lines.at(i)->t);
+			if(lines.at(i)->moving)lines.at(i)->set_f(vec2d(p*lines.at(i)->n- shear*lines.at(i)->t));
 			}
 		}
 
 	void set_force(const vec2d &g){
 		for(int i=0; i<lines.size(); i++){
-			if(lines.at(i)->moving)lines.at(i)->f=g;
+			if(lines.at(i)->moving)lines.at(i)->set_f(g);
 			}
 		}
  	private:

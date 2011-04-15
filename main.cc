@@ -24,8 +24,8 @@ const vec2d uy(0,1);
 bool cell_list_on=true;
 bool print_grid_on=true and cell_list_on;
 CCellList grid;
-double Lx=1.0;
-double Ly=2;
+double Lx=0.5;
+double Ly=1;
 bool periodic_x=true;
 bool periodic_y=false;
 
@@ -37,7 +37,7 @@ bool is_wall_moving=true;
 //this is used mainly to give a tangential velocity
 vec2d v0_wall=2*ux;
 double v_max_wall=0.2;
-double wall_pressure=1.7;
+double wall_pressure=1.0;
 double shear=0.0;
 
 
@@ -48,8 +48,8 @@ double maxtime=50;
 double outDt=0.1;
 vec2d G(0,0);
 size_t N;
-double r=0.02;
-double r_var=1.0;
+double r=0.015;
+double r_var=0.8;
 double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.005*r;
@@ -66,7 +66,7 @@ double cal_energy(CParticle *p){
 	double e=0;
 	for(int i=0; i<N; i++){
 		e+=p[i].energy();
-		e-=p[i].m*G*p[i].x;
+		e-=p[i].m*G*p[i].get_x();
 		}
 
 	return e;
@@ -78,8 +78,8 @@ void cal_forces(CParticle p[]){
 	wall.set_pressure(wall_pressure, shear);
 	for(int i=0; i<N; i++){
 		//wall.set_force(-wall_pressure*Ly*uy);
-		p[i].f=p[i].m*G;
-		p[i].tq=0;
+		p[i].set_f(p[i].m*G);
+		p[i].set_tq(0);
 
 		wall.interact(p[i]);
 	
@@ -172,10 +172,10 @@ void Initialize(){
 	   //double radius=r*(1+r_var*(0.5-drand48()));
 	   double radius=power_law(r*(1-0.5*r_var), r*(1+0.5*r_var), -exponent);
 	   p[i*grid.ny+j].set_r(radius);
-	   p[i*grid.ny+j].set_pos(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
+	   p[i*grid.ny+j].set_x(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
 
 	  double theta=(rand()%100001)*M_PI*2.0e-5;
-	   p[i*grid.ny+j].set_vel(vec2d(v0*cos(theta), v0*sin(theta)));
+	   p[i*grid.ny+j].set_v(vec2d(v0*cos(theta), v0*sin(theta)));
 	   grid.add(p[i*grid.ny+j]);
 	  }; 
 	 };
@@ -212,6 +212,10 @@ void Shutdown(){
 	delete [] p;
 	}
 
+
+
+
+
 int main(int pi, char **params){
 	if(pi==1)
 		RNGSeed=0;
@@ -222,12 +226,18 @@ int main(int pi, char **params){
 	
 	try {
 	Initialize();
+
+
 	Run();
+
 	Shutdown();
-	return 0;
+	exit(0);
 	} catch(CException e)
 	{
 	e.Report();
-	return 1;
+	exit(1);
 	}
+
 }
+
+
