@@ -137,9 +137,14 @@ class CCellList
 		c->add(&p);
 		}
 	void interact(){
-		for(int i=0; i<nx*ny; i++){
+		int i;
+		#pragma omp parallel 
+		{
+		#pragma omp for 
+		for(i=0; i<nx*ny; i++){
 			nodes[i].interact();
 			}
+		}
 		}
 
 	void print(ostream &out=cout)const{

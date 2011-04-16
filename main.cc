@@ -2,14 +2,12 @@
 #include<fstream>
 #include<sstream>
 #include<iomanip>
-#include <boost/thread/thread.hpp>
 #include <cctype>
 #include"particle.h"
 #include"MersenneTwister.h"
 #include"wall.h"
 #include"celllist.h"
 using namespace std;
-pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
 
 long RNGSeed;
 extern MTRand rgen;
@@ -240,27 +238,6 @@ bool isNumeric( const char* pszInput, int nNumberBase=10 )
 	return ( iss.rdbuf()->in_avail() == 0 );
 }
 
-void set_wall_pressure(double p){
-	pthread_mutex_lock( &mutex1 );
-	wall_pressure=p;
-	pthread_mutex_unlock( &mutex1 );
-	}
-
-void interface(){
-	string input;
-	while(1){
-		cerr<< "Enter wall pressure: " ;
-		cin>>input;
-		
-		if(! isNumeric(input.c_str()) ){
-			cerr<< "Input not a number. Try again." <<endl;
-			continue;
-			}
-		
-		set_wall_pressure(atof(input.c_str()));
-		}
-	
-	}
 
 
 int main(int pi, char **params){
@@ -275,10 +252,14 @@ int main(int pi, char **params){
 	Initialize();
 
 
-        boost::thread main_thread(Run), interface_thread(interface);
 
-	main_thread.join();
-	interface_thread.join();
+	//, interface_thread(interface);
+		#pragma omp parallel 
+		{
+		cerr<<"Number of threads "<< omp_get_num_threads() <<endl;
+		}
+	Run();
+	//interface_thread.join();
 
 	Shutdown();
 	exit(0);
@@ -286,7 +267,9 @@ int main(int pi, char **params){
 	{
 	e.Report();
 	exit(1);
-	}
+	}catch(...){
+		cerr<< "Unknow error occure." <<endl;
+		}
 
 }
 

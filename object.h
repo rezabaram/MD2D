@@ -2,7 +2,7 @@
 #define OBJECT_H 
 #include"vec.h"
 #include"dfreedom.h"
-#include <boost/thread/thread.hpp>
+#include"mutex_lock.h"
 
 //This is the class from which any moving 
 //object is derived. (Putting together the 
@@ -30,6 +30,9 @@ class CObject
 	typedef typename DimTrait::RotationVariablesType wType;
 	public:
 	CObject():translation(x,v,a), rotation(q, w, aq){
+		omp_init_lock(&lock);
+		omp_init_lock(&lock2);
+
 		x=0; v=0; a=0;
 		q=0; w=0; aq=0;
 		f=0; tq=0;
@@ -103,10 +106,16 @@ class CObject
 		tq=_tq;
 		}
 	void add_f(const xType &_f){
+		//omp_set_lock(&lock);
+		ScopedLock lck(fmutex);
 		f+=_f;
+		//omp_unset_lock(&lock);
 		}
 	void add_tq(wType _tq){
+		//omp_set_lock(&lock2);
+		ScopedLock lck(qmutex);
 		tq+=_tq;
+		//omp_unset_lock(&lock2);
 		}
 
 	double m, Im;
@@ -118,5 +127,9 @@ class CObject
 	xType x,v,a, f;
 	double v_max;
 	xType xtemp;
+   		omp_lock_t lock;
+   		omp_lock_t lock2;
+	MutexType fmutex;
+	MutexType qmutex;
 	};
 #endif /* OBJECT_H */
