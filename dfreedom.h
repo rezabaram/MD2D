@@ -13,6 +13,7 @@ class DFreedom
 		v_max=max;
 		}
 	void predict(double dt){ // (Beeman's algorithm)
+		//double dtt=6.*dt*dt;
 		 x+=(v + (2.0*a/3.0 - a0/6.0)*dt)*dt; 
 		tempDt=dt;
 		}
@@ -23,7 +24,6 @@ class DFreedom
 
 	void correct(){
 		double dt=tempDt;
-		double dtt=6.*dt*dt;
 		v+=(atemp/3+5*a/6-a0/6)*dt;
 
 

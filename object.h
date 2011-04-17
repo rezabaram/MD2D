@@ -30,8 +30,6 @@ class CObject
 	typedef typename DimTrait::RotationVariablesType wType;
 	public:
 	CObject():translation(x,v,a), rotation(q, w, aq){
-		omp_init_lock(&lock);
-		omp_init_lock(&lock2);
 
 		x=0; v=0; a=0;
 		q=0; w=0; aq=0;
@@ -127,8 +125,6 @@ class CObject
 	xType x,v,a, f;
 	double v_max;
 	xType xtemp;
-   		omp_lock_t lock;
-   		omp_lock_t lock2;
 	MutexType fmutex;
 	MutexType qmutex;
 	};
