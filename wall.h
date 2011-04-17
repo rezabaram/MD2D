@@ -76,6 +76,7 @@ class CLine : public CObject<2>
 		t(0)=n(1);
 		t(1)=-n(0);
 		m=.1;//mass
+		mu=5;//friction coefficent assigned to wall
 		set_v_max(maxv);
 		}
 	void set_const_force(const vec2d &_f){
@@ -115,7 +116,7 @@ class CLine : public CObject<2>
 
 		double vr_t = vr*t;
 
-    		double ft=-p.mu*fn*vr_t/10.;
+    		double ft=-p.mu*mu*fn*vr_t/10.;
 
 		vec2d df= fn*n + ft*t;
 		p.add_f(df);
@@ -134,6 +135,7 @@ class CLine : public CObject<2>
 	vec2d const_f;
 	bool moving;
  	private:
+	double mu;
 	};
 
 
@@ -152,10 +154,10 @@ class CWall
 	CWall(){}
 	~CWall(){
 		//cleaning the memory which was dynamcially allocated
-		for(int i=0; i<segments.size(); i++){
+		for(unsigned int i=0; i<segments.size(); i++){
 			delete segments.at(i);
 			}
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			delete lines.at(i);
 			}
 		}
@@ -176,21 +178,21 @@ class CWall
 		}
 
 	void interact(CParticle &p){
-		for(int i=0; i<segments.size(); i++){
+		for(unsigned int i=0; i<segments.size(); i++){
 			segments.at(i)->interact(p);
 			}
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			lines.at(i)->interact(p);
 			}
 		}
 	void print(ostream &out=cout)const{
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			lines.at(i)->print(out);
 			}
 		}
 
 	void predict(double dt){
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			//if(lines.at(i)->moving)lines.at(i)->f=vec2d(0,-10);
 			CLine &line=*lines.at(i);
 			if(line.moving){
@@ -201,7 +203,7 @@ class CWall
 			}
 		}
 	void correct(){
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			if(lines.at(i)->moving)lines.at(i)->correct();
 			}
 		}
@@ -211,14 +213,14 @@ class CWall
 		}
 	
 	void set_pressure(double p, double shear){
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			//if(lines.at(i)->moving)cerr<<  lines.at(i)->f<<endl;
 			if(lines.at(i)->moving)lines.at(i)->set_f(vec2d(p*lines.at(i)->n- shear*lines.at(i)->t));
 			}
 		}
 
 	void set_force(const vec2d &g){
-		for(int i=0; i<lines.size(); i++){
+		for(unsigned int i=0; i<lines.size(); i++){
 			if(lines.at(i)->moving)lines.at(i)->set_f(g);
 			}
 		}

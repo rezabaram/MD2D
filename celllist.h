@@ -15,7 +15,7 @@ class CCell : public list<CParticle *>{
 		}
 	void interact(){
 	
-		CCell:iterator it1, it2;
+		CCell::iterator it1, it2;
 		for(it1=this->begin(); it1!=this->end(); it1++){
 			for(it2=this->begin(); it2!=it1; it2++){
 				//for the same cell
@@ -114,7 +114,7 @@ class CCellList
 		}
 		
 		}
-	void update(CParticle *p, size_t N){
+	void update(CParticle *p, int N){
 		clear();
 		for(int i=0; i<N; i++){
 			add(p[i]);
@@ -140,7 +140,7 @@ class CCellList
 		int i;
 		#pragma omp parallel 
 		{
-		#pragma omp for 
+		#pragma omp for schedule(dynamic, 10) 
 		for(i=0; i<nx*ny; i++){
 			nodes[i].interact();
 			}
