@@ -55,7 +55,7 @@ class CLineSegment{
 
 		vec2d df= fn*n + ft*t;
 		p.add_f(df);
-		if(!p.rotation_fixed) p.add_tq(ft*r);
+		p.add_tq(ft*r);
 		}
 
 	void print(ostream &out=cout)const{
@@ -120,7 +120,7 @@ class CLine : public CObject<2>
 
 		vec2d df= fn*n + ft*t;
 		p.add_f(df);
-		if(!p.rotation_fixed) p.add_tq(ft*r);
+		p.add_tq(ft*r);
 
 		//force on =wall
 		add_f(-fn*n);//normal force

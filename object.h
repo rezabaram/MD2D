@@ -104,20 +104,18 @@ class CObject
 		tq=_tq;
 		}
 	void add_f(const xType &_f){
-		//omp_set_lock(&lock);
 		ScopedLock lck(fmutex);
 		f+=_f;
-		//omp_unset_lock(&lock);
 		}
 	void add_tq(wType _tq){
-		//omp_set_lock(&lock2);
 		ScopedLock lck(qmutex);
+		if(rotation_fixed) return;
 		tq+=_tq;
-		//omp_unset_lock(&lock2);
 		}
 
 	double m, Im;
 	protected:
+	bool rotation_fixed;
  	private:
 	DFreedom<xType> translation;
 	DFreedom<double> rotation;

@@ -3,7 +3,8 @@ run: a.out
 	./a.out > energy
 
 a.out: main.cc *.h
-	g++-4.2 -Wall -fopenmp -O2 main.cc 
+	g++ -Wall -O2 main.cc 
+	#g++ -Wall -fopenmp -O2 main.cc 
 
 frames:
 	sh genframe.sh out?????

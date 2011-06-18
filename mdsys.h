@@ -17,10 +17,10 @@ const vec2d uy(0,1);
 
 /* Grid ----------------------------------------*/
 bool cell_list_on=true;
-bool print_grid_on=true and cell_list_on;
+bool print_grid_on=false and cell_list_on;
 CCellList grid;
-double Lx=1.0;
-double Ly=1.5;
+double Lx=0.5;
+double Ly=2.0;
 bool periodic_x=true;
 bool periodic_y=false;
 
@@ -43,12 +43,12 @@ double maxtime=50;
 double outDt=0.1;
 vec2d G(0,0);
 int N;
-double r=0.010;
-double r_var=0.5;
+double r=0.01;
+double r_var=1.2;
 double exponent=2.4;
 ofstream logtime("logtime");
-double dt=0.005*r;
-double v0=5*r;
+double dt=0.002*r;
+double v0=1*r;
 
 
 bool isNumeric( const char* pszInput, int nNumberBase=10 )
@@ -117,6 +117,7 @@ void cal_forces(CParticle p[]){
 			grid.interact();
 			}
 	}
+
 
 void output(CParticle *p){
         static int count=0, outN=0,outPutN=outDt/dt;
@@ -197,7 +198,8 @@ void Initialize(){
 	   p[i*grid.ny+j].set_x(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
 
 	  double theta=(rand()%100001)*M_PI*2.0e-5;
-	   p[i*grid.ny+j].set_v(vec2d(v0*cos(theta), v0*sin(theta)));
+	   //p[i*grid.ny+j].set_v(vec2d(v0*cos(theta), v0*sin(theta)));
+	   p[i*grid.ny+j].set_v(vec2d(0,0));
 	   grid.add(p[i*grid.ny+j]);
 	  }; 
 	 };

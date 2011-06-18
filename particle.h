@@ -8,6 +8,7 @@
 using namespace std;
 
 
+MutexType tempmutex;
 class CParticle: public CObject<2>{
 
 	public:
@@ -62,10 +63,10 @@ class CParticle: public CObject<2>{
 
 		vec2d df= fn*n + ft*t;
 		add_f(df);
-		if(!rotation_fixed) add_tq(ft*r);
+		add_tq(ft*r);
       
 		p.add_f(-df);
-		if(!p.rotation_fixed) p.add_tq(ft*p.r);
+		p.add_tq(ft*p.r);
 	CATCH
 		}
 	void fix_rotation(double w0){
@@ -85,7 +86,6 @@ class CParticle: public CObject<2>{
 	double kn, kd,mu,vt;
 	double vtr; //velocidade de transição
 
-	bool rotation_fixed;
 	private:
 
 	double density;
