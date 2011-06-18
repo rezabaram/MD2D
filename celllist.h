@@ -13,9 +13,9 @@ class CCell : public list<CParticle *>{
 		//of neighbors
 		neighs[0]=this;
 		}
-	void interact(){
+	void interact()const{
 	
-		CCell::iterator it1, it2;
+		CCell::const_iterator it1, it2;
 		for(it1=this->begin(); it1!=this->end(); it1++){
 			for(it2=this->begin(); it2!=it1; it2++){
 				//for the same cell
@@ -137,14 +137,12 @@ class CCellList
 		c->add(&p);
 		}
 	void interact(){
-		int i;
-		#pragma omp parallel 
-		{
-		#pragma omp for schedule(dynamic, 10) 
-		for(i=0; i<nx*ny; i++){
+		//#pragma omp parallel for schedule(dynamic, 500) 
+		for(int i=0; i<nx*ny; i++){
+			//cerr<<"Number of threads: "<< omp_get_num_threads() <<endl;
 			nodes[i].interact();
+			//cerr<< "thread:" <<omp_get_thread_num() <<endl;
 			}
-		}
 		}
 
 	void print(ostream &out=cout)const{

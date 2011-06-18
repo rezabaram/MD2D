@@ -72,6 +72,21 @@ foreach (@ARGV) {
 #   $tmp=21.0 / $auto_xsize; # 210mm
 #   if($tmp<$scale) {$scale=$tmp};
 #  }
+
+############## an arrow 
+#newpath
+#4.500000 25.30 moveto
+#1 0  rlineto
+#-.1 .2  rlineto
+#.5 -.3  rlineto
+#-.5 -.3  rlineto
+#0.1 .2  rlineto
+#-1 0  rlineto
+#0 0.2  rlineto
+#fill
+#stroke
+###################
+
  print "%!PS-Adobe-1.0\n";
  print "%%Pages: ", $page_counter,"\n";
  print "/box {newpath 2 index 2 index exch moveto dup 0 rlineto dup 0 exch  rlineto -1 mul 0  rlineto pop  pop closepath stroke} bind def\n";
