@@ -13,7 +13,7 @@ class CCell : public list<CParticle *>{
 		//of neighbors
 		neighs[0]=this;
 		}
-	void interact()const{
+	virtual void interact()const{
 	
 		CCell::const_iterator it1, it2;
 		for(it1=this->begin(); it1!=this->end(); it1++){
@@ -37,6 +37,11 @@ class CCell : public list<CParticle *>{
 	void add(CParticle *p){
 		push_back(p);
 		}
+	//function for setting up neighbours.
+	//shift vector is used for periodic boundary condition:
+	//if a cell is set as a neighbour of a cell on the side
+	//the translation needed to be actually neighbour is given
+	//by "shift" and stored in the cell.
 	void set_top_right(CCell *c, const vec2d &shift=vec2d(0,0)){
 		neighs[1]=c;
 		shifts[1]=shift;
@@ -101,8 +106,7 @@ class CCellList
 		cerr<< "Constructing the grid ... ";
 		nx=floor(diag(0)/d);
 		ny=floor(diag(1)/d);
-		dx=diag(0)/(double)nx;
-		dy=diag(1)/(double)ny;
+		dL=vec2d(diag(0)/(double)nx, diag(1)/(double)ny);
 		if(nodes!=NULL)delete [] nodes;
 		nodes=new CCell[nx*ny];
 		build_neighbors();
@@ -122,12 +126,9 @@ class CCellList
 		}
 	CCell *which(CParticle &particle){
 		vec2d xp=particle.get_x()-c;
-		int i=(int)(floor(xp(0)/dx));
-		int j=(int)(floor(xp(1)/dy));
-		if(!periodic_x) ERROR(i<0 or i>=nx, "Point out of grid: "+stringify(particle.get_x())+stringify(i)+" " +stringify(j));
-		if(!periodic_y) ERROR(j<0 or j>=ny, "Point out of grid: "+stringify(particle.get_x())+stringify(i)+" " +stringify(j));
-		vec2d shift(0,0);
-		CCell *p=boundary_mask(i,j, shift);
+		ivec2d ixp=ifloor(xp/dL);
+		vec2d shift=vec2d(0.0);
+		CCell *p=boundary_mask(ixp(0),ixp(1), shift);
 		particle.shift(shift);
 		return p;
 		}
@@ -136,6 +137,7 @@ class CCellList
 		CCell *c=which(p);
 		c->add(&p);
 		}
+
 	void interact(){
 		//#pragma omp parallel for schedule(dynamic, 500) 
 		for(int i=0; i<nx*ny; i++){
@@ -150,30 +152,33 @@ class CCellList
 		double x=c(0);
 		while(x<=c(0)+diag(0)+1e-10){
 			out<< x<<"  "<< c(1)<<"\t"<< x <<"  "<<c(1)+diag(1)<<endl;
-			x+=dx;
+			x+=dL(0);
 			}
 		double y=c(1);
 		while(y<=c(1)+diag(1)+1e-10){
 			out<< c(0)<<"  "<< y<<"\t"<< c(0)+diag(0)<<"  "<<y<<endl;
-			y+=dy;
+			y+=dL(1);
 			}
 		}
 
 	CCell *boundary_mask(int i,int j, vec2d &shift);
 	CCell *node(int i, int j)const{
+		ERROR(i<0 or j<0 or i>=nx or j>=ny, "Cell index out of bound: ("+stringify(i)+", "+stringify(j)+")")
 		return &nodes[ny*i+j];
 		}
  	//private:
 	void build_neighbors();
 	int nx, ny;
-	vec2d c, diag;
-	double dx, dy;
+	ivec2d iN;
+	vec2d c, diag, dL;
 	CCell *nodes;
  	private:
 	bool periodic_x, periodic_y;
 	};
 
-
+//this function return the pointer to the cell (i,j)
+//if periodic bc is on it recalculates i and j and gives also 
+//the corresponding shift vector.
 CCell *CCellList::boundary_mask(int i,int j, vec2d &shift){
 	
 		shift=0;
@@ -182,29 +187,25 @@ CCell *CCellList::boundary_mask(int i,int j, vec2d &shift){
 				i-=nx;
 				shift(0)-=diag(0);
 				}
-			else return NULL;
 			}
 		if(i < 0){
 			if(periodic_x){
 				i+=nx;
 				shift(0)+=diag(0);
 				}
-			else return NULL;
 			}
 		if(j >= ny){
 			if(periodic_y){
 				j-=ny;
 				shift(1)-=diag(1);
 				}
-			else return NULL;
-				}
+			}
 		if(j < 0){
 			if(periodic_y){
 				j+=ny;
 				shift(1)+=diag(1);
 				}
-			else return NULL;
-				}
+			}
 	
 		return node(i,j);
 		}

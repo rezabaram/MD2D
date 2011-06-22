@@ -1,0 +1,99 @@
+#ifndef QUADCELL_H
+#define QUADCELL_H 
+#include<list>
+using namespace std;
+
+class CQuadCell :  public list<CParticle *>{
+	public:
+	CQuadCell(const vec2d &_c, const vec2d &_L, int g=0):c(_c), L(_L), capacity(5), gen(g){
+		split=false;
+		for(int i=0; i<4; i++){
+			child[i]=NULL;
+			}
+		}
+	~CQuadCell(){
+		if(split)
+		for(int i=0; i<4; i++){
+			delete child[i];
+			child[i]=NULL;
+			}
+		}
+	
+	
+	void refine(){
+		/*
+		 --------
+		| 1 | 2 |
+		 --------
+		| 0 | 3 |
+		 --------
+		*/
+		vec2d L2=L/2.0;
+		child[0]= new CQuadCell(c,L2, gen+1);
+		child[1]= new CQuadCell(c+vec2d(0,L2(1)),L/2., gen+1);
+		child[2]= new CQuadCell(c+L2,L2, gen+1);
+		child[3]= new CQuadCell(c+vec2d(L2(0),0),L/2., gen+1);
+		split=true;
+		
+		//give the particles over to the childern
+		CQuadCell::iterator it;
+		for(it=this->begin(); it!=this->end(); it++){
+			if(child[0]->add(*it))continue;
+			if(child[1]->add(*it))continue;
+			if(child[2]->add(*it))continue;
+			child[3]->add(*it);
+			}
+		this->clear();
+		}
+
+	
+	void add(CParticle *p, int N){
+		for(int i=0; i<N; i++){
+			add(&p[i]);
+			}
+		}
+	void add(list<CParticle *> &l){
+		list<CParticle *>::iterator it;
+		for(it=l.begin(); it!=l.end(); it++){
+			add(*it);
+			}
+		}
+
+	bool add(CParticle *p){
+		vec2d x=p->get_x();
+		if(x(0)<c(0) or  x(1)<c(1) or x(0)>c(0)+L(0) or  x(1)>c(1)+L(1) ) return false;
+		if(this->size()==capacity) if(!split)refine();
+		if(split) for(int i=0; i<4; i++){
+			if(child[i]->add(p))return true;
+			}
+		else{
+			this->push_back(p);
+			return true;
+			}
+		ERROR(1,"Should not reach here");
+		}
+	void print(ofstream &outf, string s="")const;
+
+	CQuadCell *child[4];
+	vec2d c, L;
+	bool split;
+	unsigned int capacity;
+	int gen;
+	};
+
+void CQuadCell::print(ofstream &outf, string s)const{
+	if(gen==0){
+		outf<<"lines"<<endl;
+		outf<< c <<"\t"<< c+vec2d(L(0),0)<<endl;
+		outf<< c+vec2d(L(0),0) <<"\t"<< c+L<<endl;
+		outf<< c+L <<"\t"<< c+vec2d(0,L(1))<<endl;
+		outf<< c+vec2d(0,L(1))<<"\t"<<c<<endl;
+		}
+
+	if(split)for(int i=0;i<4;i++){
+		outf<<s<< c+vec2d(0,L(1)/2) <<"\t" <<c+vec2d(L(0),L(1)/2) <<"\t"<< c+L<<endl;
+		outf<<s<< c+vec2d(L(0)/2,0) <<"\t" <<c+vec2d(L(0)/2,L(1)) <<"\t"<< c+L<<endl;
+		child[i]->print(outf, s+"         ");
+		}
+	}
+#endif /* QUADCELL_H */

@@ -4,6 +4,7 @@
 #include"MersenneTwister.h"
 #include"wall.h"
 #include"celllist.h"
+#include"quadcell.h"
 using namespace std;
 
 extern MTRand rgen;
@@ -20,7 +21,7 @@ bool cell_list_on=true;
 bool print_grid_on=false and cell_list_on;
 CCellList grid;
 double Lx=0.5;
-double Ly=2.0;
+double Ly=1.0;
 bool periodic_x=true;
 bool periodic_y=false;
 
@@ -43,8 +44,8 @@ double maxtime=50;
 double outDt=0.1;
 vec2d G(0,0);
 int N;
-double r=0.01;
-double r_var=1.2;
+double r=0.02;
+double r_var=1.4;
 double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.002*r;
@@ -138,8 +139,11 @@ void output(CParticle *p){
                         //walls.print(out);
                         //gout=&out;
 		out<<"10000000 0 0 0 0 0 0"<<endl;
-		out<<"lines"<<endl;
-		wall.print(out);
+		//out<<"lines"<<endl;
+		//wall.print(out);
+		CQuadCell quadcell(vec2d(0,0),vec2d(1,1));
+		quadcell.add(p,N);
+		quadcell.print(out);
 		if(print_grid_on)grid.print(out);
 		out<<"circles"<<endl;
 		for(int i=0; i<N; i++){
@@ -195,7 +199,7 @@ void Initialize(){
 	   //double radius=r*(1+r_var*(0.5-drand48()));
 	   double radius=power_law(r*(1-0.5*r_var), r*(1+0.5*r_var), -exponent);
 	   p[i*grid.ny+j].set_r(radius);
-	   p[i*grid.ny+j].set_x(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
+	   p[i*grid.ny+j].set_x(vec2d(i+0.5,j+0.5)^grid.dL);
 
 	  double theta=(rand()%100001)*M_PI*2.0e-5;
 	   //p[i*grid.ny+j].set_v(vec2d(v0*cos(theta), v0*sin(theta)));

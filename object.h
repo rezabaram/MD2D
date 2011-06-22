@@ -37,10 +37,12 @@ class CObject
 		m=1; Im=1;
 		v_max=1e+14;
 		}
+	virtual ~CObject(){}
 	
 	void predict(double dt){ // (Beeman's algorithm)
 		translation.predict(dt);
 		rotation.predict(dt);
+		//just to keep the angle between 0 and 2pi (not crucial)
 		if (q>2.0*M_PI) q-=2.0*M_PI; if (q<0) q+=2.0*M_PI;
 		}
 

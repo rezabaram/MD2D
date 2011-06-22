@@ -102,6 +102,7 @@ class Vec{
 	  Vec operator/(T a)const ;
 	  Vec operator+(const Vec &p)const ;
 	  Vec operator-(const Vec &p)const ;
+	  Vec operator/(const Vec &p)const;
 	  T abs2()const;
 	  T abs()const;
 	  T distance(const Vec p)const;
@@ -140,12 +141,21 @@ class Vec{
 		return in;
 		}
 
+	//elementvise vector multiplication
 	template<indexType _dim, class T, class policy>
 	Vec<_dim, T, policy> Vec<_dim, T, policy>::operator^(const Vec<_dim, T, policy> &p)const{
-		//cerr<<"Not implemented. File: "<<__FILE__<<"  Line: "<< __LINE__ <<endl;
 		static Vec<_dim, T, policy> v(0.0);
 		for(size_t i=0; i<dim; i++){
 			v(i)=x[i]*p[i];
+			}
+		return v;
+		}
+	//elementvise vector divition
+	template<indexType _dim, class T, class policy>
+	Vec<_dim, T, policy> Vec<_dim, T, policy>::operator/(const Vec<_dim, T, policy> &p)const{
+		static Vec<_dim, T, policy> v(0.0);
+		for(size_t i=0; i<dim; i++){
+			v(i)=x[i]/p[i];
 			}
 		return v;
 		}
@@ -310,6 +320,7 @@ class Vec{
 		return Vec<3, T, policy> (policy::mul(u(1),v(2))-policy::mul(u(2),v(1)),policy::mul(u(2),v(0))-policy::mul(u(0),v(2)),policy::mul(u(0),v(1))-policy::mul(u(1),v(0)));
 	}
 
+
 template<indexType _dim, class T, class policy>
 inline
 double fabs(const Vec<_dim, T, policy> &v){
@@ -320,7 +331,15 @@ typedef Vec<2,double> vec2d;
 typedef Vec<2,int> ivec2d;
 typedef Vec<3,double> vec;
 typedef Vec<3,double> vec3d;
+typedef Vec<3,int> ivec3d;
 typedef Vec<4,double> vec4d;
+
+ivec2d ifloor(const vec2d &v){
+	return ivec2d((int)floor(v(0)), (int)floor(v(1)));
+	}
+vec2d floor(const vec2d &v){
+	return vec2d((int)floor(v(0)), (int)floor(v(1)));
+	}
 
 class HomVec: public vec4d{
  	typedef HomVec ret;
