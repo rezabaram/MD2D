@@ -96,4 +96,30 @@ void CQuadCell::print(ofstream &outf, string s)const{
 		child[i]->print(outf, s+"         ");
 		}
 	}
+
+void setup_neighbourhood(){
+/*	
+	if(!split)return;
+	vec2d shift(0,0);	
+	CQuadCell *p;
+	p=boundary_mask(i-1,j+1, shift);
+	child[0]->set_top(child[1]);
+	child[0]->set_right(child[3]);
+	child[0]->set_top_right(child[2]);
+
+	child[1]->set_top(child[1]);
+	child[1]->set_right(child[3]);
+	child[1]->set_top_right(child[2]);
+
+	child[2]->set_top(child[1]);
+	child[2]->set_right(child[3]);
+	child[2]->set_top_right(child[2]);
+
+	child[3]->set_top(child[1]);
+	child[3]->set_right(child[3]);
+	child[3]->set_top_right(child[2]);
+
+*/
+	}
+
 #endif /* QUADCELL_H */
