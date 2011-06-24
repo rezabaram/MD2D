@@ -5,7 +5,7 @@ using namespace std;
 
 class CQuadCell :  public list<CParticle *>{
 	public:
-	CQuadCell(const vec2d &_c, const vec2d &_L, int g=0):c(_c), L(_L), capacity(5), gen(g){
+	CQuadCell(const vec2d &_c, const vec2d &_L, int g=0):c(_c), L(_L), capacity(2), gen(g){
 		split=false;
 		for(int i=0; i<4; i++){
 			child[i]=NULL;
@@ -37,12 +37,11 @@ class CQuadCell :  public list<CParticle *>{
 		
 		//give the particles over to the childern
 		CQuadCell::iterator it;
+		bool success=false;
 		for(it=this->begin(); it!=this->end(); it++){
-			if(child[0]->add(*it))continue;
-			if(child[1]->add(*it))continue;
-			if(child[2]->add(*it))continue;
-			child[3]->add(*it);
+			success=(child[0]->add(*it) or child[1]->add(*it) or child[2]->add(*it) or child[3]->add(*it));
 			}
+		ERROR(!success, "Failure in refinemnet of a cell");
 		this->clear();
 		}
 
@@ -61,15 +60,17 @@ class CQuadCell :  public list<CParticle *>{
 
 	bool add(CParticle *p){
 		vec2d x=p->get_x();
-		if(x(0)<c(0) or  x(1)<c(1) or x(0)>c(0)+L(0) or  x(1)>c(1)+L(1) ) return false;
-		if(this->size()==capacity) if(!split)refine();
+		double r=p->get_r();
+		//if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
+		if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
+		if(this->size()==capacity) if(!split) refine();
 		if(split) for(int i=0; i<4; i++){
-			if(child[i]->add(p))return true;
+			child[i]->add(p);
 			}
 		else{
 			this->push_back(p);
-			return true;
 			}
+		return true;
 		ERROR(1,"Should not reach here");
 		}
 	void print(ofstream &outf, string s="")const;
