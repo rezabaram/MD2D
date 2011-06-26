@@ -16,13 +16,14 @@ const vec2d ux(1,0);
 const vec2d uy(0,1);
 
 
+CQuadCell quadcell(vec2d(0,0),vec2d(1,1));
 /* Grid ----------------------------------------*/
 bool cell_list_on=true;
 bool print_grid_on=false and cell_list_on;
 CCellList grid;
-double Lx=0.5;
+double Lx=1.0;
 double Ly=1.0;
-bool periodic_x=true;
+bool periodic_x=false;
 bool periodic_y=false;
 
 
@@ -41,11 +42,11 @@ double shear=0.0;
 CParticle *p;
 double t=0;
 double maxtime=50;
-double outDt=0.1;
+double outDt=0.06;
 vec2d G(0,0);
 int N;
 double r=0.02;
-double r_var=1.4;
+double r_var=0.4;
 double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.002*r;
@@ -113,10 +114,17 @@ void cal_forces(CParticle p[]){
 
 		}
 	
-		if(cell_list_on){
+		if(0 and cell_list_on){
 			grid.update(p, N);
 			grid.interact();
+		quadcell.fullclear();
+		quadcell.add(p,N);
 			}
+		else{
+		quadcell.fullclear();
+		quadcell.add(p,N);
+		quadcell.cal_interactions();
+		}
 	}
 
 
@@ -141,8 +149,6 @@ void output(CParticle *p){
 		out<<"10000000 0 0 0 0 0 0"<<endl;
 		//out<<"lines"<<endl;
 		//wall.print(out);
-		CQuadCell quadcell(vec2d(0,0),vec2d(1,1));
-		quadcell.add(p,N);
 		quadcell.print(out);
 		if(print_grid_on)grid.print(out);
 		out<<"circles"<<endl;

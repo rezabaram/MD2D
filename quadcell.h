@@ -12,15 +12,37 @@ class CQuadCell :  public list<CParticle *>{
 			}
 		}
 	~CQuadCell(){
+		fullclear();
+		}
+
+	void fullclear(){
 		if(split)
 		for(int i=0; i<4; i++){
 			delete child[i];
 			child[i]=NULL;
 			}
+		split=false;
 		}
 	
+	void cal_interactions(){
+		if(split) {
+			for(int i=0; i<4; i++)
+				child[i]->cal_interactions();
+			//return;
+			}
+		assert(this->size()<=2);
+		if(this->size()!=2)return;
+		//if(!contact.exist)return;
+		contact.calculate();
+		if( !contact.exist)return;
+		if( !this->contains(contact.x))return;
+		assert( contact.p1!=contact.p2);
+		contact.apply_forces();
+		}
 	
 	void refine(){
+		if(gen==20)cerr<< size() <<endl;
+		ERROR(gen==20,"Refinement limit reached: "+stringify(20,2));
 		/*
 		 --------
 		| 1 | 2 |
@@ -37,11 +59,12 @@ class CQuadCell :  public list<CParticle *>{
 		
 		//give the particles over to the childern
 		CQuadCell::iterator it;
-		bool success=false;
+		bool added=false;
 		for(it=this->begin(); it!=this->end(); it++){
-			success=(child[0]->add(*it) or child[1]->add(*it) or child[2]->add(*it) or child[3]->add(*it));
+			for(int i=0; i<4; i++)
+				added=child[i]->add(*it) or added;
 			}
-		ERROR(!success, "Failure in refinemnet of a cell");
+		ERROR(!added, "Failure in refinemnet of a cell");
 		this->clear();
 		}
 
@@ -51,6 +74,7 @@ class CQuadCell :  public list<CParticle *>{
 			add(&p[i]);
 			}
 		}
+
 	void add(list<CParticle *> &l){
 		list<CParticle *>::iterator it;
 		for(it=l.begin(); it!=l.end(); it++){
@@ -58,21 +82,43 @@ class CQuadCell :  public list<CParticle *>{
 			}
 		}
 
-	bool add(CParticle *p){
-		vec2d x=p->get_x();
-		double r=p->get_r();
-		//if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
-		if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
-		if(this->size()==capacity) if(!split) refine();
-		if(split) for(int i=0; i<4; i++){
-			child[i]->add(p);
-			}
-		else{
-			this->push_back(p);
-			}
-		return true;
-		ERROR(1,"Should not reach here");
+	template<class T>
+	 T clamp(T X, T Min, T Max)const {
+	   return ( X > Max ) ? Max : ( X < Min ) ? Min : X;
+	 }
+	
+	bool contains (const vec2d &x){
+		return ( x(0)>c(0) and x(1)>c(1) and x(0)<c(0)+L(0) and x(1)<c(1)+L(1) );
 		}
+
+	bool intersect(const CParticle *p)const{
+		vec2d center=p->get_x();
+		double radius=p->get_r();
+		vec2d closest(clamp(center(0), c(0), c(0)+L(0)), clamp(center(1), c(1), c(1)+L(1)));    
+		return (closest - center).abs2() <= radius * radius+1e-10;
+		}
+
+	bool add(CParticle *p){
+		//if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
+		if(!intersect(p))return false;
+		if(split){ 
+			bool added=false;
+			for(int i=0; i<4; i++)
+				added=child[i]->add(p) or added;
+			assert(added);
+			return true;
+			}
+		this->push_back(p);
+		if(this->size()==2) {
+				contact.p1=*(this->begin());
+				contact.p2=p;
+				}
+		if(this->size()>capacity) refine(); 
+
+
+		return true;
+		}
+
 	void print(ofstream &outf, string s="")const;
 
 	CQuadCell *child[4];
@@ -80,6 +126,7 @@ class CQuadCell :  public list<CParticle *>{
 	bool split;
 	unsigned int capacity;
 	int gen;
+	CParticle::CContact contact;
 	};
 
 void CQuadCell::print(ofstream &outf, string s)const{
@@ -92,9 +139,22 @@ void CQuadCell::print(ofstream &outf, string s)const{
 		}
 
 	if(split)for(int i=0;i<4;i++){
-		outf<<s<< c+vec2d(0,L(1)/2) <<"\t" <<c+vec2d(L(0),L(1)/2) <<"\t"<< c+L<<endl;
-		outf<<s<< c+vec2d(L(0)/2,0) <<"\t" <<c+vec2d(L(0)/2,L(1)) <<"\t"<< c+L<<endl;
+		outf<<s<< c+vec2d(0,L(1)/2) <<"\t" <<c+vec2d(L(0),L(1)/2) <<endl;
+		outf<<s<< c+vec2d(L(0)/2,0) <<"\t" <<c+vec2d(L(0)/2,L(1)) <<endl;
 		child[i]->print(outf, s+"         ");
+		}
+	else{
+		//drawings for debugging
+		//return;
+		if(this->size()==2) contact.print(outf);
+		return;
+		CQuadCell::const_iterator it;
+		for(it=this->begin(); it!=this->end(); it++){
+			vec2d center=(*it)->get_x();
+			vec2d temp(clamp(center(0), c(0), c(0)+L(0)), clamp(center(1), c(1), c(1)+L(1)));    
+			//outf<<center<<"   "<<temp<<endl;
+			outf<< center <<"\t" <<c+L/2. <<endl;
+			}
 		}
 	}
 

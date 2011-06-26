@@ -1,0 +1,19 @@
+
+quadcell:
+implemented in class CQuadCell drived from list<CParticle *>.
+this class contains four pointer of type CQuadCell itself which, when refined, will be used for its children.
+when particle is added to a cell:
+	- if it has no overlaping with the cell, it is discarded 
+	- if the cell is splitted, the particle is given over to the children (this is done recursively)
+	- otherwise, it is added to the list of the cell
+	- if the list size is 2, the contact is defined (for calculating the forces later)
+	- if the list size is bigger than 2, the cell refined that is:
+			- new memory is allocated for the children
+			- all the particles of the cell are added to the children
+			- the list is cleared
+	
+Assersions:
+	- each cell can overlap with maximum 2 particles
+
+When calculating the forces:
+	- the quadree is tranversed and contacts are calculated for leaf cell and, only if the contact point is within that cell, the forces are applied (this is to avoid applying forces more than once for each colliding pair)
