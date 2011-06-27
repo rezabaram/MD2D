@@ -3,10 +3,11 @@
 #include<list>
 using namespace std;
 
-class CQuadCell :  public list<CParticle *>{
+class CQuadCell {
 	public:
-	CQuadCell(const vec2d &_c, const vec2d &_L, int g=0):c(_c), L(_L), capacity(2), gen(g){
+	CQuadCell(const vec2d &_c, const vec2d &_L, int g=0):c(_c), L(_L), capacity(2), gen(g),nParticles(0){
 		split=false;
+		stop=true;
 		for(int i=0; i<4; i++){
 			child[i]=NULL;
 			}
@@ -15,6 +16,11 @@ class CQuadCell :  public list<CParticle *>{
 		fullclear();
 		}
 
+	void shallowclear(){
+		stop=true;
+		nParticles=0;
+		contact.exist=false;
+		}
 	void fullclear(){
 		if(split)
 		for(int i=0; i<4; i++){
@@ -22,16 +28,18 @@ class CQuadCell :  public list<CParticle *>{
 			child[i]=NULL;
 			}
 		split=false;
+		stop=true;
 		}
 	
 	void cal_interactions(){
-		if(split) {
+		if(!stop) {
+			assert(split);
 			for(int i=0; i<4; i++)
 				child[i]->cal_interactions();
 			//return;
 			}
-		assert(this->size()<=2);
-		if(this->size()!=2)return;
+		assert(nParticles<=2);
+		if(nParticles!=2)return;
 		//if(!contact.exist)return;
 		contact.calculate();
 		if( !contact.exist)return;
@@ -40,9 +48,6 @@ class CQuadCell :  public list<CParticle *>{
 		contact.apply_forces();
 		}
 	
-	void refine(){
-		if(gen==20)cerr<< size() <<endl;
-		ERROR(gen==20,"Refinement limit reached: "+stringify(20,2));
 		/*
 		 --------
 		| 1 | 2 |
@@ -50,22 +55,34 @@ class CQuadCell :  public list<CParticle *>{
 		| 0 | 3 |
 		 --------
 		*/
-		vec2d L2=L/2.0;
-		child[0]= new CQuadCell(c,L2, gen+1);
-		child[1]= new CQuadCell(c+vec2d(0,L2(1)),L/2., gen+1);
-		child[2]= new CQuadCell(c+L2,L2, gen+1);
-		child[3]= new CQuadCell(c+vec2d(L2(0),0),L/2., gen+1);
+	void give_over_down(CParticle *p){
+		assert(split);
+		for(int i=0; i<4; i++)
+			child[i]->add(p);
+		}
+	void refine(){
+		ERROR(gen==20,"Refinement limit reached: "+stringify(20,2));
+		if(!split){//allocate only if it is not
+			vec2d L2=L/2.0;
+			child[0]= new CQuadCell(c,L2, gen+1);
+			child[1]= new CQuadCell(c+vec2d(0,L2(1)),L/2., gen+1);
+			child[2]= new CQuadCell(c+L2,L2, gen+1);
+			child[3]= new CQuadCell(c+vec2d(L2(0),0),L/2., gen+1);
+			}
+
+		child[0]->shallowclear();
+		child[1]->shallowclear();
+		child[2]->shallowclear();
+		child[3]->shallowclear();
 		split=true;
+		stop=false;
 		
 		//give the particles over to the childern
-		CQuadCell::iterator it;
-		bool added=false;
-		for(it=this->begin(); it!=this->end(); it++){
-			for(int i=0; i<4; i++)
-				added=child[i]->add(*it) or added;
-			}
-		ERROR(!added, "Failure in refinemnet of a cell");
-		this->clear();
+		if(nParticles>=1)give_over_down(contact.p1);
+		if(nParticles==2)give_over_down(contact.p2);
+	
+		assert(nParticles<=2);
+		nParticles=0;
 		}
 
 	
@@ -99,22 +116,19 @@ class CQuadCell :  public list<CParticle *>{
 		}
 
 	bool add(CParticle *p){
-		//if( x(0)+r<c(0) or  x(1)+r<c(1) or x(0)-r>c(0)+L(0) or  x(1)-r>c(1)+L(1) ) return false;
 		if(!intersect(p))return false;
-		if(split){ 
-			bool added=false;
-			for(int i=0; i<4; i++)
-				added=child[i]->add(p) or added;
-			assert(added);
+		if(nParticles==2) {
+			refine();
+			give_over_down(p);
 			return true;
 			}
-		this->push_back(p);
-		if(this->size()==2) {
-				contact.p1=*(this->begin());
-				contact.p2=p;
-				}
-		if(this->size()>capacity) refine(); 
-
+		if(!stop){ 
+			assert(split);
+			give_over_down(p);
+			return true;
+			}
+		if(nParticles==1) {contact.p2=p; ++nParticles;}
+		if(nParticles==0) {contact.p1=p; ++nParticles;}
 
 		return true;
 		}
@@ -123,10 +137,11 @@ class CQuadCell :  public list<CParticle *>{
 
 	CQuadCell *child[4];
 	vec2d c, L;
-	bool split;
+	bool split, stop;
 	unsigned int capacity;
-	int gen;
+	int gen,nParticles;
 	CParticle::CContact contact;
+	
 	};
 
 void CQuadCell::print(ofstream &outf, string s)const{
@@ -138,23 +153,25 @@ void CQuadCell::print(ofstream &outf, string s)const{
 		outf<< c+vec2d(0,L(1))<<"\t"<<c<<endl;
 		}
 
-	if(split)for(int i=0;i<4;i++){
-		outf<<s<< c+vec2d(0,L(1)/2) <<"\t" <<c+vec2d(L(0),L(1)/2) <<endl;
-		outf<<s<< c+vec2d(L(0)/2,0) <<"\t" <<c+vec2d(L(0)/2,L(1)) <<endl;
-		child[i]->print(outf, s+"         ");
+	if(split){
+			assert(split);
+			for(int i=0;i<4;i++){
+				outf<<s<< c+vec2d(0,L(1)/2) <<"\t" <<c+vec2d(L(0),L(1)/2) <<endl;
+				outf<<s<< c+vec2d(L(0)/2,0) <<"\t" <<c+vec2d(L(0)/2,L(1)) <<endl;
+				child[i]->print(outf, s+"         ");
+			 }
 		}
 	else{
 		//drawings for debugging
-		//return;
-		if(this->size()==2) contact.print(outf);
 		return;
-		CQuadCell::const_iterator it;
-		for(it=this->begin(); it!=this->end(); it++){
-			vec2d center=(*it)->get_x();
-			vec2d temp(clamp(center(0), c(0), c(0)+L(0)), clamp(center(1), c(1), c(1)+L(1)));    
-			//outf<<center<<"   "<<temp<<endl;
-			outf<< center <<"\t" <<c+L/2. <<endl;
+		if(nParticles==2) {
+			contact.print(outf);
 			}
+		return;
+			//vec2d center=(*it)->get_x();
+			//vec2d temp(clamp(center(0), c(0), c(0)+L(0)), clamp(center(1), c(1), c(1)+L(1)));    
+			//outf<<center<<"   "<<temp<<endl;
+			//outf<< center <<"\t" <<c+L/2. <<endl;
 		}
 	}
 

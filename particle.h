@@ -43,6 +43,8 @@ class CParticle: public CObject<2>{
 			t=vec2d(n(1), -n(0));
 			x=(p1->get_x()+p2->get_x()-p1->get_r()*n+p2->get_r()*n)/2.0;
 			}
+		void add(CParticle *p){
+			}
 		void apply_forces(){
 		TRY
 			if(!exist)return;

@@ -16,15 +16,15 @@ const vec2d ux(1,0);
 const vec2d uy(0,1);
 
 
-CQuadCell quadcell(vec2d(0,0),vec2d(1,1));
 /* Grid ----------------------------------------*/
 bool cell_list_on=true;
 bool print_grid_on=false and cell_list_on;
 CCellList grid;
 double Lx=1.0;
-double Ly=1.0;
+double Ly=2.0;
 bool periodic_x=false;
 bool periodic_y=false;
+CQuadCell quadcell(vec2d(0,0),vec2d(Lx,Ly));
 
 
 /* Wall --------------------------------------- */
@@ -45,8 +45,8 @@ double maxtime=50;
 double outDt=0.06;
 vec2d G(0,0);
 int N;
-double r=0.02;
-double r_var=0.4;
+double r=0.03;
+double r_var=1.4;
 double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.002*r;
@@ -117,11 +117,13 @@ void cal_forces(CParticle p[]){
 		if(0 and cell_list_on){
 			grid.update(p, N);
 			grid.interact();
-		quadcell.fullclear();
-		quadcell.add(p,N);
+		//quadcell.fullclear();
+		//quadcell.shallowclear();
+		//quadcell.add(p,N);
 			}
 		else{
-		quadcell.fullclear();
+		quadcell.shallowclear();
+		//quadcell.fullclear();
 		quadcell.add(p,N);
 		quadcell.cal_interactions();
 		}
