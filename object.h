@@ -113,6 +113,10 @@ class CObject
 		tq+=_tq;
 		}
 
+	double work_rate(){
+		return f*v;
+		}
+
 	double m, Im;
 	protected:
 	bool rotation_fixed;

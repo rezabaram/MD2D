@@ -5,6 +5,7 @@
 #include <cctype>
 #include"mdsys.h"
 
+
 long RNGSeed;
 extern MTRand rgen;
 int main(int pi, char **params){
@@ -13,7 +14,7 @@ int main(int pi, char **params){
 	else
 		RNGSeed=313*atoi(params[1])+1;
 
-	cerr<<"RNG Seed: "<<RNGSeed<<endl;
+	//cerr<<"RNG Seed: "<<RNGSeed<<endl;
 	
 	try {
 	Initialize();

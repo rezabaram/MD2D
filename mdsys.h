@@ -1,12 +1,27 @@
 #ifndef MDSYS_H
 #define MDSYS_H 
+#include"config.h"
 #include"particle.h"
 #include"MersenneTwister.h"
 #include"wall.h"
 #include"celllist.h"
 using namespace std;
-
 extern MTRand rgen;
+
+CConfig config("config");
+
+double Lx=config.get_param<double>("Lx");
+double Ly=config.get_param<double>("Ly");
+double maxtime=config.get_param<double>("maxtime");
+double outDt=config.get_param<double>("outDt");
+double wall_pressure=config.get_param<double>("wall_pressure");
+vec2d G=config.get_param<vec2d>("G");
+
+bool periodic_x=config.get_param<bool>  ("periodic_x");
+bool periodic_y=config.get_param<double>("periodic_y");
+
+
+
 /* Defining basic vectors ----------------------*/
 //origin
 const vec2d O(0,0);
@@ -19,36 +34,30 @@ const vec2d uy(0,1);
 bool cell_list_on=true;
 bool print_grid_on=false and cell_list_on;
 CCellList grid;
-double Lx=0.5;
-double Ly=2.0;
-bool periodic_x=true;
-bool periodic_y=false;
 
 
 /* Wall --------------------------------------- */
 CWall wall;
-bool is_wall_moving=true;
+bool wall_moving=true;
 //initial velocity of the wall
 //this is used mainly to give a tangential velocity
 vec2d v0_wall=2*ux;
 double v_max_wall=0.2;
-double wall_pressure=1.0;
 double shear=0.0;
+double work_by_wall=0;
 
 
 /* Simulation ---------------------------------*/
 CParticle *p;
 double t=0;
-double maxtime=50;
-double outDt=0.1;
-vec2d G(0,0);
 int N;
 double r=0.01;
-double r_var=1.2;
-double exponent=2.4;
+double r_var=0.5;
+double exponent=1.4;
 ofstream logtime("logtime");
-double dt=0.002*r;
+double dt=0.02*r/v0_wall.abs();
 double v0=1*r;
+
 
 
 bool isNumeric( const char* pszInput, int nNumberBase=10 )
@@ -79,13 +88,13 @@ bool isNumeric( const char* pszInput, int nNumberBase=10 )
 double power_law(double x0, double x1, double n){
 	double y=drand48();
 	return pow((pow(x1,(n+1)) - pow(x0,(n+1)))*y + pow(x0,(n+1)), (1/(n+1.)) );
-
 	}
+
 double cal_energy(CParticle *p){
 
 	double e=0;
 	int i;
-	#pragma omp parallel for
+	//#pragma omp parallel for
 	for(i=0; i<N; i++){
 		e+=p[i].energy();
 		e-=p[i].m*G*p[i].get_x();
@@ -148,13 +157,15 @@ void output(CParticle *p){
 			out.close();
                         count=0;
                         outN++;
-			cout<< t <<"\t"<< cal_energy(p) <<endl;
+			cout<< t <<"\t"<< cal_energy(p)<<'\t'<< work_by_wall <<endl;
+			work_by_wall=0;
                        }
 		count++;
 
 	}
 
 void Initialize(){
+
 
 /* Boundary set up -------------------------------*/
 	if(periodic_x and periodic_y){
@@ -168,9 +179,9 @@ void Initialize(){
 		wall.add_shadow_line(Lx*ux+Ly*uy,-ux);
 		//wall.add_line(O,uy);
 		//defining a moving wall
-		wall.add_line(Lx*ux+Ly*uy,-uy, is_wall_moving, v0_wall, v_max_wall);
+		wall.add_line(Lx*ux+Ly*uy,-uy, wall_moving, v0_wall, v_max_wall);
 		//wall.add_line(Lx*ux+Ly*uy,-uy);
-		wall.add_line(O,uy, is_wall_moving, -v0_wall, v_max_wall);
+		wall.add_line(O,uy, wall_moving, -v0_wall, v_max_wall);
 		//wall.add_line(O,uy);
 		}
 	else if(!periodic_x and !periodic_y){
@@ -178,7 +189,7 @@ void Initialize(){
 		wall.add_line(Lx*ux+Ly*uy,-ux);
 		wall.add_line(O,uy);
 		//defining a moving wall
-		wall.add_line(Lx*ux+Ly*uy,-uy, is_wall_moving, v0_wall, v_max_wall);
+		wall.add_line(Lx*ux+Ly*uy,-uy, wall_moving, v0_wall, v_max_wall);
 		}
 	else{
 		ERROR(1,"The boundary configuration not implemented.");
@@ -197,7 +208,7 @@ void Initialize(){
 	   p[i*grid.ny+j].set_r(radius);
 	   p[i*grid.ny+j].set_x(vec2d((i+0.5)*grid.dx, (j+0.5)*grid.dy));
 
-	  double theta=(rand()%100001)*M_PI*2.0e-5;
+	  //double theta=(rand()%100001)*M_PI*2.0e-5;
 	   //p[i*grid.ny+j].set_v(vec2d(v0*cos(theta), v0*sin(theta)));
 	   p[i*grid.ny+j].set_v(vec2d(0,0));
 	   grid.add(p[i*grid.ny+j]);
@@ -216,10 +227,10 @@ void Run(){
 
 	output(p);
 	while (t<maxtime){
-
+		
 		wall.predict(dt);
 		int i;
-		#pragma omp parallel for
+		//#pragma omp parallel for
 		for(i=0; i<N; i++){
 			p[i].predict(dt);
 			}
@@ -228,12 +239,13 @@ void Run(){
 
 		wall.correct();
 
-		#pragma omp parallel for
+		//#pragma omp parallel for
 		for(i=0; i<N; i++){
 			p[i].correct();
 			}
 
 		t+=dt;
+		work_by_wall+=wall.work_rate()*dt;
 		output(p);
 		}
 }

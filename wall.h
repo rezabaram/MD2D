@@ -51,7 +51,7 @@ class CLineSegment{
 
 		double vr_t = vr*t;
 
-    	double ft=(fn>0)?(-p.mu*fn*vr_t/10.):(p.mu*fn*vr_t/10.);
+    		double ft=(fn>0)?(-p.mu*fn*vr_t/10.):(p.mu*fn*vr_t/10.);
 
 		vec2d df= fn*n + ft*t;
 		p.add_f(df);
@@ -123,7 +123,8 @@ class CLine : public CObject<2>
 		p.add_tq(ft*r);
 
 		//force on =wall
-		add_f(-fn*n);//normal force
+		//add_f(-fn*n);//normal force
+		add_f(-df);//normal force
 		//f-=df;
 		}
 
@@ -223,6 +224,13 @@ class CWall
 		for(unsigned int i=0; i<lines.size(); i++){
 			if(lines.at(i)->moving)lines.at(i)->set_f(g);
 			}
+		}
+	double work_rate(){
+		double w=0;
+		for(unsigned int i=0; i<lines.size(); i++){
+			if(lines.at(i)->moving)w+=lines.at(i)->work_rate();
+			}
+		return w;
 		}
  	private:
 	vector<CLineSegment*> segments;
