@@ -52,8 +52,8 @@ CParticle *p;
 double t=0;
 int N;
 double r=0.01;
-double r_var=0.5;
-double exponent=1.4;
+double r_var=config.get_param<double>("r_var");
+double exponent=2.4;
 ofstream logtime("logtime");
 double dt=0.02*r/v0_wall.abs();
 double v0=1*r;
@@ -125,6 +125,16 @@ void cal_forces(CParticle p[]){
 			grid.update(p, N);
 			grid.interact();
 			}
+	}
+
+vec2d center(CParticle *p){
+
+	vec2d cm=0;
+	for(int i=0; i<N; i++){
+		cm+=p[i].get_x();
+		}
+	cm*=(1./(double)N);
+	return cm;
 	}
 
 

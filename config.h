@@ -18,6 +18,7 @@ class CConfig : public CBaseConfig{
 		add_param<double>("outDt",0.1);
 		add_param<vec2d>("G",vec2d(0,0));
 		add_param<double>("wall_pressure", 1);
+		add_param<double>("r_var", 1);
 		}
 	};
 

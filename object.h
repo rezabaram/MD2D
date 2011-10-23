@@ -26,6 +26,7 @@ class DimensionTrait<2>{
 template<int Dim=2, class DimTrait=DimensionTrait<Dim> >
 class CObject 
 	{
+	protected:
 	typedef typename DimTrait::TranslationVariablesType xType;
 	typedef typename DimTrait::RotationVariablesType wType;
 	public:
@@ -50,9 +51,9 @@ class CObject
 		rotation.update_accel(tq/Im);
 		translation.correct();
 		rotation.correct();
-		check_max();
+		apply_constrains();
 		}
-	virtual void check_max(){
+	virtual void apply_constrains(){
 		}
 	virtual void shift(const xType &_x){
 		x+=_x;

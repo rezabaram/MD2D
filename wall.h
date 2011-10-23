@@ -78,6 +78,10 @@ class CLine : public CObject<2>
 		m=.1;//mass
 		mu=5;//friction coefficent assigned to wall
 		set_v_max(maxv);
+
+		//fixing the velocity component in x direction
+		//FIXME this is very adhock 
+		vt=_v0-(_v0*n)*n;
 		}
 	void set_const_force(const vec2d &_f){
 		const_f=_f;
@@ -88,17 +92,20 @@ class CLine : public CObject<2>
 		set_f(const_f);
 		}
 
-	void check_max(){
+	void apply_constrains(){
 		//imposing a maximum on the normal 
 		//component of the velocity
+		//cerr<< vt <<endl;
 		vec2d _v=get_v();
 		double d=fabs(_v*n);
+		vec2d vn=n*(_v*n);
 		if(d>get_v_max()){
-			vec2d vn=n*(_v*n);
 			_v-=vn;
 			vn*=get_v_max()/d;
-			set_v(_v+vn);
+			//set_v(_v+vn);
+			//set_v(vt+vn);
 			}
+		set_v(vt+vn);
 		}
 
 	double distance(const vec2d &_x){
@@ -136,6 +143,7 @@ class CLine : public CObject<2>
 	vec2d const_f;
 	bool moving;
  	private:
+	xType vt;
 	double mu;
 	};
 
