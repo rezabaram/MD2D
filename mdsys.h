@@ -150,12 +150,12 @@ void output(CParticle *p){
 
 
         if(count%outPutN==0 ){
-                        stringstream outstream;
-                        outstream<<"out"<<setw(5)<<setfill('0')<<outN;
-			cerr<< outN<<endl;
-                        out.open(outstream.str().c_str());
-                        //walls.print(out);
-                        //gout=&out;
+		stringstream outstream;
+		outstream<<"out"<<setw(5)<<setfill('0')<<outN;
+		cerr<< outN<<endl;
+		out.open(outstream.str().c_str());
+		//walls.print(out);
+		//gout=&out;
 		out<<"10000000 0 0 0 0 0 0"<<endl;
 		out<<"lines"<<endl;
 		wall.print(out);
@@ -163,13 +163,13 @@ void output(CParticle *p){
 		out<<"circles"<<endl;
 		for(int i=0; i<N; i++){
 			p[i].print(out);
-                        }
-			out.close();
-                        count=0;
-                        outN++;
-			cout<< t <<"\t"<< cal_energy(p)<<'\t'<< work_by_wall <<endl;
-			work_by_wall=0;
-                       }
+			}
+		out.close();
+		count=0;
+		outN++;
+		cout<< t <<"\t"<< cal_energy(p)<<'\t'<< work_by_wall <<endl;
+		work_by_wall=0;
+                }
 		count++;
 
 	}
