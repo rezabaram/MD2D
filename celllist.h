@@ -2,6 +2,7 @@
 #define CELLLIST_H 
 #include<list>
 #include"exception.h"
+#include"particle.h"
 using namespace std;
 
 class CCell : public list<CParticle *>{

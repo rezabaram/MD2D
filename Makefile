@@ -7,7 +7,7 @@ run: a.out
 
 
 a.out : main.cc *h
-	$(CC) $(CFLAGS) main.cc
+	$(CC) $(CFLAGS) -g main.cc
 
 #%.o : %.cc
 	#$(CC) $(CFLAGS) -c  $<
@@ -24,7 +24,7 @@ cleanall:
 	rm -f *.jpg *.ps a.out out0*
 
 animate: frames
-	animate -delay 10 *jpg
+	animate -delay 15 *jpg
 
 bak:
 	mv -f out0* log* energy trash

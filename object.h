@@ -121,7 +121,7 @@ class CObject
 	double m, Im;
 	protected:
 	bool rotation_fixed;
- 	private:
+ 	//private:
 	DFreedom<xType> translation;
 	DFreedom<double> rotation;
 	double q,w,aq, tq;

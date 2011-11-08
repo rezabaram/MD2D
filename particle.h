@@ -7,6 +7,17 @@
 #include"object.h"
 using namespace std;
 
+class CParticle;
+class CContact
+	{
+	public:
+	//CContact(const vec2d &_x,const vec2d &_f,const  vec2d &_v):dx(_x),f(_f),v(_v){}
+	CContact(const vec2d &_x,double dis):dx(_x),dissipation(dis){}
+	vec2d dx;
+	//vec2d dx, f, v;
+	double dissipation;
+ 	private:
+	};
 
 MutexType tempmutex;
 class CParticle: public CObject<2>{
@@ -64,7 +75,8 @@ class CParticle: public CObject<2>{
 		vec2d df= fn*n + ft*t;
 		add_f(df);
 		add_tq(ft*r);
-      
+     		if(save_contacts)contacts.push_back(CContact(p.get_x()-x,vr_t*ft));
+ 
 		p.add_f(-df);
 		p.add_tq(ft*p.r);
 	CATCH
@@ -86,10 +98,13 @@ class CParticle: public CObject<2>{
 	double kn, kd,mu,vt;
 	double vtr; //velocidade de transição
 
+	vector <CContact> contacts;
+	bool save_contacts;
 	private:
 
 	double density;
 	double r;
+	
 	};
 
 void CParticle::init() {

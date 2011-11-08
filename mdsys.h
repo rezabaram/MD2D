@@ -1,5 +1,6 @@
 #ifndef MDSYS_H
 #define MDSYS_H 
+#include"tools.h"
 #include"config.h"
 #include"particle.h"
 #include"MersenneTwister.h"
@@ -12,7 +13,10 @@ CConfig config("config");
 
 double Lx=config.get_param<double>("Lx");
 double Ly=config.get_param<double>("Ly");
+double r=config.get_param<double>("size");
 double maxtime=config.get_param<double>("maxtime");
+double outStart=config.get_param<double>("outStart");
+double outEnd=config.get_param<double>("outEnd");
 double outDt=config.get_param<double>("outDt");
 double wall_pressure=config.get_param<double>("wall_pressure");
 vec2d G=config.get_param<vec2d>("G");
@@ -41,7 +45,7 @@ CWall wall;
 bool wall_moving=true;
 //initial velocity of the wall
 //this is used mainly to give a tangential velocity
-vec2d v0_wall=2*ux;
+vec2d v0_wall=1.5*ux;
 double v_max_wall=0.2;
 double shear=0.0;
 double work_by_wall=0;
@@ -51,44 +55,13 @@ double work_by_wall=0;
 CParticle *p;
 double t=0;
 int N;
-double r=0.01;
 double r_var=config.get_param<double>("r_var");
 double exponent=2.4;
 ofstream logtime("logtime");
-double dt=0.02*r/v0_wall.abs();
+double dt=0.01*r/2;
 double v0=1*r;
 
 
-
-bool isNumeric( const char* pszInput, int nNumberBase=10 )
-{
-	istringstream iss( pszInput );
- 
-	if ( nNumberBase == 10 )
-	{
-		double dTestSink;
-		iss >> dTestSink;
-	}
-	else if ( nNumberBase == 8 || nNumberBase == 16 )
-	{
-		int nTestSink;
-		iss >> ( ( nNumberBase == 8 ) ? oct : hex ) >> nTestSink;
-	}
-	else
-		return false;
- 
-	// was any input successfully consumed/converted?
-	if ( ! iss )
-		return false;
- 
-	// was all the input successfully consumed/converted?
-	return ( iss.rdbuf()->in_avail() == 0 );
-}
-
-double power_law(double x0, double x1, double n){
-	double y=drand48();
-	return pow((pow(x1,(n+1)) - pow(x0,(n+1)))*y + pow(x0,(n+1)), (1/(n+1.)) );
-	}
 
 double cal_energy(CParticle *p){
 
@@ -103,14 +76,22 @@ double cal_energy(CParticle *p){
 	return e;
 	}
 
-void cal_forces(CParticle p[]){
-
-	
+void reset_forces(CParticle p[], bool save_contacts=false){
 	wall.set_pressure(wall_pressure, shear);
 	for(int i=0; i<N; i++){
 		//wall.set_force(-wall_pressure*Ly*uy);
 		p[i].set_f(p[i].m*G);
 		p[i].set_tq(0);
+		p[i].contacts.clear();
+		p[i].save_contacts=save_contacts;
+
+	}
+}
+void cal_forces(CParticle p[], bool save_contacts=false){
+
+	
+	reset_forces(p, save_contacts);
+	for(int i=0; i<N; i++){
 
 		wall.interact(p[i]);
 	
@@ -149,7 +130,7 @@ void output(CParticle *p){
         	logtime<<(clock()-starttime)/CLOCKS_PER_SEC<< "   "<<t<<endl;
 
 
-        if(count%outPutN==0 ){
+        if(count%outPutN==0 and t>=outStart and t<=outEnd ){
 		stringstream outstream;
 		outstream<<"out"<<setw(5)<<setfill('0')<<outN;
 		cerr<< outN<<endl;
@@ -164,6 +145,16 @@ void output(CParticle *p){
 		for(int i=0; i<N; i++){
 			p[i].print(out);
 			}
+		//out<<"contacts"<<endl;
+		out<<"contacts"<<endl;
+		cal_forces(p, true);
+		for(int i=0; i<N; i++){
+			for(int j=0; j<p[i].contacts.size();j++){
+				double diss=p[i].contacts.at(j).dissipation;
+				if(fabs(diss)<0.0001 and fabs(p[i].get_w()*p[i].get_r()>0.02))out<< p[i].get_x()<<"  "<<p[i].get_x()+p[i].contacts.at(j).dx<<"   "<<diss<<endl;
+				}
+			}
+		
 		out.close();
 		count=0;
 		outN++;

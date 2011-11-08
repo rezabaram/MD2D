@@ -148,18 +148,42 @@ setfont
     /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
 
     $skipline=0;
+    if($1 eq "contacts"){
+    		$readcircles=0;
+		$readlines=0;
+		$readcontacts=1;
+		$skipline=1;
+    /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
+		}
     if($1 eq "lines"){
     		$readcircles=0;
 		$readlines=1;
+		$readcontacts=0;
 		$skipline=1;
     /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
 		}
     elsif($1 eq "circles"){
     		$readlines=0;
 		$readcircles=1;
+		$readcontacts=0;
 		$skipline=1;
+		if($2 eq "color"){$coloron=1;}
     /^\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)\s*(\S*)/; 
 		}
+    if($skipline==0 and $readcontacts==1){
+	    $x=$xoffset+$scale*$1;
+	    $y=$yoffset+$scale*$2;
+	    $x2=$xoffset+$scale*$3;
+	    $y2=$yoffset+$scale*$4;
+	    $w=abs($5/0.0001);
+	    
+	     printf("gsave %f %f %f setrgbcolor fill \n", $w, 0, 1-$w);
+	     print "0.05 setlinewidth\n";
+	     printf("newpath %f %f moveto\n", $x, $y);
+	     printf("%f %f lineto stroke\n", $x2, $y2);
+	     print "grestore ";
+	    $particle_counter--;
+	}
     if($skipline==0 and $readlines==1){
 	    $x=$xoffset+$scale*$1;
 	    $y=$yoffset+$scale*$2;
@@ -176,18 +200,21 @@ setfont
 	    $angle=$4;
 	    $x2=$x+$r*cos($angle);
 	    $y2=$y+$r*sin($angle);
-	    $w=0.8*$5*$r/$colorscale;
+ 	    $w=0; 
+	    if($coloron){ 
+		    $w=0.8*$5*$r/$colorscale;
+		    printf("newpath %f %f moveto\n", $x, $y);
+		    printf("%f %f lineto stroke\n", $x2, $y2);
+		}
 	     
 	     if($w>0){
-		printf("gsave %f %f %f setrgbcolor fill \n", .8-$w, .8-$w, .8);
+		printf("gsave %f %f %f setrgbcolor fill \n", .9-$w, .9-$w, .9);
 		}
 	    else{
-		printf("gsave %f %f %f setrgbcolor fill \n", .8, .8+$w, .8+$w);
+		printf("gsave %f %f %f setrgbcolor fill \n", .9, .9+$w, .9+$w);
 		}
 	     printf("%f %f %f fcir\n", $x, $y, $r);
 	     print "grestore ";
-	     printf("newpath %f %f moveto\n", $x, $y);
-	     printf("%f %f lineto stroke\n", $x2, $y2);
 	    $particle_counter--;
 	}
    }
