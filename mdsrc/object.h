@@ -2,7 +2,7 @@
 #define OBJECT_H 
 #include"vec.h"
 #include"dfreedom.h"
-#include"mutex_lock.h"
+//#include"mutex_lock.h"
 
 //This is the class from which any moving 
 //object is derived. (Putting together the 
@@ -105,11 +105,11 @@ class CObject
 		tq=_tq;
 		}
 	void add_f(const xType &_f){
-		ScopedLock lck(fmutex);
+		//ScopedLock lck(fmutex);
 		f+=_f;
 		}
 	void add_tq(wType _tq){
-		ScopedLock lck(qmutex);
+		//ScopedLock lck(qmutex);
 		if(rotation_fixed) return;
 		tq+=_tq;
 		}
@@ -128,7 +128,7 @@ class CObject
 	xType x,v,a, f;
 	double v_max;
 	xType xtemp;
-	MutexType fmutex;
-	MutexType qmutex;
+	//MutexType fmutex;
+	//MutexType qmutex;
 	};
 #endif /* OBJECT_H */

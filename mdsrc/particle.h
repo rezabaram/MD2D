@@ -19,7 +19,6 @@ class CContact
  	private:
 	};
 
-MutexType tempmutex;
 class CParticle: public CObject<2>{
 
 	public:

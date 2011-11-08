@@ -3,8 +3,9 @@
 #include<sstream>
 #include<iomanip>
 #include <cctype>
-#include"mdsys.h"
-
+#include "exception.h"
+#include "MersenneTwister.h"
+#include "mdsys.h"
 
 long RNGSeed;
 extern MTRand rgen;
@@ -19,15 +20,6 @@ int main(int pi, char **params){
 	try {
 	Initialize();
 
-		#ifdef _OPENMP
-		#pragma omp parallel 
-		{
-		#pragma omp master
-			{
-			cerr<<"Number of threads: "<< omp_get_num_threads() <<endl;
-			}
-		}
-		#endif
 	Run();
 
 	Shutdown();

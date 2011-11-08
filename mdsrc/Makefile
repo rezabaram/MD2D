@@ -7,7 +7,7 @@ run: a.out
 
 
 a.out : main.cc *h
-	$(CC) $(CFLAGS) -g main.cc
+	$(CC) $(CFLAGS) main.cc mdsys.cc
 
 #%.o : %.cc
 	#$(CC) $(CFLAGS) -c  $<

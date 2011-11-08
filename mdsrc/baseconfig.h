@@ -81,7 +81,7 @@ class CBaseConfig {
 	public:
 	CBaseConfig(){
 		}; 
-	~CBaseConfig();                                 
+	virtual ~CBaseConfig();                                 
 	//static CBaseConfig& Instance();
 	bool isValid(string fname)const;
 	void parse(string fname);
