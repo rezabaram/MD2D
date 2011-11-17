@@ -27,7 +27,14 @@ class CParticle: public CObject<2>{
 		init();
 		}
 
-	void init();
+	void init() {
+		rotation_fixed=false;
+		kn=1e+5; kd=30; mu=0.8;
+		r=1;
+		vt=2.0;
+		density=1;
+		update_mass();
+		}
 	void update_mass(){
 		m=density*M_PI*r*r;
 		Im=m*r*r/2.0;
@@ -106,13 +113,5 @@ class CParticle: public CObject<2>{
 	
 	};
 
-void CParticle::init() {
-	rotation_fixed=false;
-	kn=1e+5; kd=30; mu=0.8;
-	r=1;
-	vt=2.0;
-	density=1;
-	update_mass();
-	}
 
 #endif /* PARTICLE_H */

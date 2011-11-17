@@ -15,7 +15,7 @@ typedef size_t indexType;
 #define check_index
 
 #ifdef check_index
-#define CHECK_INDEX(i, D) ERROR((i<0 or i>= D), "Index out of range");
+#define CHECK_INDEX(i, D) ERROR(( i>= D), "Index out of range");
 #endif 
 
 using namespace std;

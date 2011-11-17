@@ -30,6 +30,7 @@ class CObject
 	typedef typename DimTrait::TranslationVariablesType xType;
 	typedef typename DimTrait::RotationVariablesType wType;
 	public:
+	virtual ~CObject(){};
 	CObject():translation(x,v,a), rotation(q, w, aq){
 
 		x=0; v=0; a=0;

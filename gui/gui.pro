@@ -1,5 +1,5 @@
 # to generate makefile on mac use : qmake -spec macx-g++
-HEADERS     = gui.h 
+HEADERS     = gui.h mdthread.h
 SOURCES     = gui.cpp main.cpp ../mdsrc/mdsys.cc mdthread.cpp
 FORMS       = gui.ui
 

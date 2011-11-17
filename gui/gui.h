@@ -1,11 +1,12 @@
 #ifndef GUI_H
 #define GUI_H 
  
-#include <QGraphicsEllipseItem>
 #include <QGraphicsScene> 
 #include <QGraphicsTextItem> 
 #include "ui_gui.h"
  
+#include<iostream>
+using namespace std;
  
 class mdGuiApp : public QMainWindow, private Ui::mdGui
 {
@@ -15,11 +16,19 @@ public:
 
     mdGuiApp(QMainWindow *parent = 0);
  
+    QGraphicsScene *pscene;
+
 public slots:
+    void plot(){
+	emit need_to_plot();
+		};
     //void getPath();
     //void doSomething();
     //void clear();
     //void about();
+signals:
+	void need_to_plot();
+
 };
 
 
